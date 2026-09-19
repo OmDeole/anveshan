@@ -18,3 +18,15 @@ export interface CameraSettings {
   yaw: number;   // in radians
   lerpSpeed: number;
 }
+
+export type SanctuaryEventId = 'tech-treasure-hunt' | 'promptify' | 'logic-lamps';
+
+export interface SanctuaryEventData {
+  id: SanctuaryEventId;
+  name: string;
+  kanji: string;
+  tagline: string;
+  position: { x: number; y: number; z: number };
+  color: number;
+  colorHex: string;
+}

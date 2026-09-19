@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
-import { Environment } from './Environment';
-import { InputState } from '../types';
+import { Environment, SANCTUARY_EVENTS } from './Environment';
+import { InputState, SanctuaryEventId } from '../types';
 
 export class GameEngine {
   private container: HTMLElement;
@@ -13,6 +13,13 @@ export class GameEngine {
   // Game entities
   public samurai: SamuraiCharacter;
   public environment: Environment;
+
+  // Event Waypoint Proximity Tracking
+  public onEventTriggered: ((eventId: SanctuaryEventId) => void) | null = null;
+  public onNearEventChanged: ((eventId: SanctuaryEventId | null) => void) | null = null;
+  public isEventModalOpen: boolean = false;
+  public lastTriggeredEventId: SanctuaryEventId | null = null;
+  public nearbyEventId: SanctuaryEventId | null = null;
 
   // Input & Physics
   private input: InputState = {
@@ -111,6 +118,18 @@ export class GameEngine {
 
   public setSprint(isSprinting: boolean) {
     this.input.sprint = isSprinting;
+  }
+
+  public setEventModalOpen(isOpen: boolean) {
+    this.isEventModalOpen = isOpen;
+    if (isOpen) {
+      this.input.forward = false;
+      this.input.backward = false;
+      this.input.left = false;
+      this.input.right = false;
+      this.input.sprint = false;
+      this.input.moveVector = { x: 0, y: 0 };
+    }
   }
 
   private setupEventListeners() {
@@ -397,6 +416,49 @@ export class GameEngine {
     );
     this.cameraLookTarget.lerp(targetLookAt, Math.min(10.0 * delta, 0.95));
     this.camera.lookAt(this.cameraLookTarget);
+
+    // 7. Event Waypoint Proximity Detection
+    let foundNearby: SanctuaryEventId | null = null;
+    const triggerRadius = 2.2;
+    const exitRadius = 3.2;
+
+    for (const ev of SANCTUARY_EVENTS) {
+      const dx = this.characterPos.x - ev.position.x;
+      const dz = this.characterPos.z - ev.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      if (dist < triggerRadius) {
+        foundNearby = ev.id;
+        // Trigger if not already triggered for this event and modal is not currently open
+        if (this.lastTriggeredEventId !== ev.id && !this.isEventModalOpen) {
+          this.lastTriggeredEventId = ev.id;
+          if (this.onEventTriggered) {
+            this.onEventTriggered(ev.id);
+          }
+        }
+        break;
+      }
+    }
+
+    // Reset lastTriggeredEventId when walking away from the beacon
+    if (this.lastTriggeredEventId) {
+      const lastEv = SANCTUARY_EVENTS.find((e) => e.id === this.lastTriggeredEventId);
+      if (lastEv) {
+        const dx = this.characterPos.x - lastEv.position.x;
+        const dz = this.characterPos.z - lastEv.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist > exitRadius) {
+          this.lastTriggeredEventId = null;
+        }
+      }
+    }
+
+    if (foundNearby !== this.nearbyEventId) {
+      this.nearbyEventId = foundNearby;
+      if (this.onNearEventChanged) {
+        this.onNearEventChanged(foundNearby);
+      }
+    }
   }
 
   private tick = () => {

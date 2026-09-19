@@ -1,14 +1,16 @@
 /**
- * Audio manager for Samurai Mountain Adventure / Anveshan 3.0
- * Supports playing user custom background soundtrack (MP3 / Audio)
- * and ambient sound, with auto-fallback and easy file upload/drop.
+ * Audio manager for Samurai Mountain Adventure / Anveshan
+ * Loops background soundtrack extracted from intro cinematic,
+ * providing seamless play/mute controls across the entire site.
  */
+
+import soundtrackUrl from '../assets/soundtrack.mp3';
 
 class SoundController {
   private audio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
   private isPlaying: boolean = false;
-  private currentTrackUrl: string = '/assets/soundtrack.mp3';
+  private currentTrackUrl: string = soundtrackUrl || '/assets/soundtrack.mp3';
   private listeners: Array<() => void> = [];
 
   constructor() {
@@ -40,9 +42,13 @@ class SoundController {
       this.notify();
     });
     audio.addEventListener('error', () => {
-      // If default asset file isn't found yet, handle gracefully
-      this.isPlaying = false;
-      this.notify();
+      // If primary path fails, try fallback
+      if (url !== '/assets/soundtrack.mp3') {
+        this.initAudio('/assets/soundtrack.mp3');
+      } else {
+        this.isPlaying = false;
+        this.notify();
+      }
     });
 
     this.audio = audio;
@@ -68,15 +74,22 @@ class SoundController {
   }
 
   public async play(): Promise<boolean> {
+    return this.playFrom(this.audio ? this.audio.currentTime : 0);
+  }
+
+  public async playFrom(timeInSeconds: number = 0): Promise<boolean> {
     if (!this.audio) return false;
     try {
+      if (Number.isFinite(timeInSeconds) && timeInSeconds >= 0) {
+        this.audio.currentTime = timeInSeconds;
+      }
       this.audio.muted = this.isMuted;
       await this.audio.play();
       this.isPlaying = true;
       this.notify();
       return true;
     } catch {
-      // Browser autoplay policy might block before user gesture
+      // Browser autoplay policy might require user gesture
       this.isPlaying = false;
       this.notify();
       return false;
@@ -101,6 +114,26 @@ class SoundController {
     }
     this.notify();
     return this.isMuted;
+  }
+
+  public toggleSound(): boolean {
+    if (!this.audio) return false;
+    if (this.isPlaying && !this.isMuted) {
+      this.audio.muted = true;
+      this.isMuted = true;
+    } else {
+      this.audio.muted = false;
+      this.isMuted = false;
+      if (!this.isPlaying) {
+        this.play().catch(() => {});
+      }
+    }
+    this.notify();
+    return !this.isMuted;
+  }
+
+  public isSoundActive(): boolean {
+    return this.isPlaying && !this.isMuted;
   }
 
   public getIsMuted(): boolean {

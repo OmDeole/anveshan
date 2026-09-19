@@ -1,4 +1,35 @@
 import * as THREE from 'three';
+import { SanctuaryEventData } from '../types';
+
+export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
+  {
+    id: 'tech-treasure-hunt',
+    name: 'Tech Treasure Hunt',
+    kanji: '宝探し',
+    tagline: 'Fuji Panoramic Overlook',
+    position: { x: -6.0, y: 0.7, z: -6.5 },
+    color: 0xf59e0b, // Amber gold
+    colorHex: '#f59e0b',
+  },
+  {
+    id: 'promptify',
+    name: 'Promptify',
+    kanji: '詠唱',
+    tagline: 'Sakura Grove Passage',
+    position: { x: -8.5, y: 0.7, z: 3.5 },
+    color: 0xc084fc, // Ethereal purple
+    colorHex: '#c084fc',
+  },
+  {
+    id: 'logic-lamps',
+    name: 'Logic Lamps',
+    kanji: '論理灯',
+    tagline: 'Chureito Pagoda Steps',
+    position: { x: 4.2, y: 1.5, z: -1.5 },
+    color: 0x34d399, // Sacred emerald/teal
+    colorHex: '#34d399',
+  },
+];
 
 export class Environment {
   public scene: THREE.Scene;
@@ -8,6 +39,16 @@ export class Environment {
   private petalSpeeds!: Float32Array;
   private petalCount = 450;
   private lanternLights: THREE.PointLight[] = [];
+  private eventWaypointObjects: {
+    group: THREE.Group;
+    orb: THREE.Mesh;
+    ring1: THREE.Mesh;
+    ring2: THREE.Mesh;
+    beam: THREE.Mesh;
+    light: THREE.PointLight;
+    groundRune: THREE.Mesh;
+    baseY: number;
+  }[] = [];
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -20,6 +61,7 @@ export class Environment {
     this.createStoneLanterns();
     this.createWoodenRailings();
     this.createSakuraPetalSystem();
+    this.createEventWaypoints();
   }
 
   /**
@@ -799,6 +841,162 @@ export class Environment {
     const time = performance.now() * 0.003;
     this.lanternLights.forEach((light, idx) => {
       light.intensity = 1.3 + Math.sin(time * 3 + idx * 1.7) * 0.2;
+    });
+
+    // 3. Animate event waypoint beacons
+    this.eventWaypointObjects.forEach((wp, idx) => {
+      const t = time + idx * 2.1;
+
+      // Floating orb gentle hover bob
+      wp.orb.position.y = 1.6 + Math.sin(t * 1.2) * 0.15;
+
+      // Scale pulse on inner orb
+      const pulse = 1.0 + Math.sin(t * 2.5) * 0.12;
+      wp.orb.scale.set(pulse, pulse, pulse);
+
+      // Rotate orbital rings
+      wp.ring1.rotation.y += delta * 0.8;
+      wp.ring1.rotation.x = Math.sin(t * 0.7) * 0.3;
+      wp.ring2.rotation.y -= delta * 0.6;
+      wp.ring2.rotation.z = Math.cos(t * 0.5) * 0.4;
+
+      // Pulsing beam intensity
+      const beamMat = wp.beam.material as THREE.MeshBasicMaterial;
+      beamMat.opacity = 0.12 + Math.sin(t * 1.8) * 0.06;
+
+      // Pulsing ground rune
+      const runeMat = wp.groundRune.material as THREE.MeshBasicMaterial;
+      runeMat.opacity = 0.2 + Math.sin(t * 1.4) * 0.1;
+      wp.groundRune.rotation.y += delta * 0.3;
+
+      // Breathing light intensity
+      wp.light.intensity = 1.8 + Math.sin(t * 2.0) * 0.6;
+    });
+  }
+
+  /**
+   * Create 3 glowing event waypoint beacons at sanctuary locations.
+   * Each beacon consists of:
+   * - Ethereal floating orb (core sphere)
+   * - Two rotating orbital ring halos
+   * - Vertical light beam pillar
+   * - Ground rune/sigil circle
+   * - Colored point light for atmospheric illumination
+   */
+  private createEventWaypoints() {
+    SANCTUARY_EVENTS.forEach((event) => {
+      const group = new THREE.Group();
+      group.position.set(event.position.x, event.position.y, event.position.z);
+
+      const color = new THREE.Color(event.color);
+
+      // 1. Core Floating Orb (inner glowing sphere)
+      const orbGeo = new THREE.SphereGeometry(0.18, 16, 16);
+      const orbMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.95,
+      });
+      const orb = new THREE.Mesh(orbGeo, orbMat);
+      orb.position.y = 1.6;
+      group.add(orb);
+
+      // Outer glow halo sphere (larger, semi-transparent)
+      const glowGeo = new THREE.SphereGeometry(0.32, 16, 16);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.18,
+        depthWrite: false,
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      orb.add(glow);
+
+      // 2. Orbital Ring 1 (tilted torus halo)
+      const ring1Geo = new THREE.TorusGeometry(0.42, 0.018, 8, 32);
+      const ring1Mat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.5,
+        depthWrite: false,
+      });
+      const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+      ring1.position.y = 1.6;
+      ring1.rotation.x = Math.PI * 0.35;
+      group.add(ring1);
+
+      // 3. Orbital Ring 2 (perpendicular smaller torus)
+      const ring2Geo = new THREE.TorusGeometry(0.34, 0.014, 8, 32);
+      const ring2Mat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      });
+      const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+      ring2.position.y = 1.6;
+      ring2.rotation.x = Math.PI * 0.6;
+      ring2.rotation.z = Math.PI * 0.25;
+      group.add(ring2);
+
+      // 4. Vertical Light Beam (soft pillar from ground to sky)
+      const beamGeo = new THREE.CylinderGeometry(0.06, 0.12, 5.0, 8, 1, true);
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.14,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const beam = new THREE.Mesh(beamGeo, beamMat);
+      beam.position.y = 2.5;
+      group.add(beam);
+
+      // 5. Ground Rune Circle (flat sigil ring on ground plane)
+      const runeGeo = new THREE.RingGeometry(0.6, 0.75, 32);
+      const runeMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.25,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const groundRune = new THREE.Mesh(runeGeo, runeMat);
+      groundRune.rotation.x = -Math.PI / 2;
+      groundRune.position.y = 0.02;
+      group.add(groundRune);
+
+      // Inner rune ring
+      const innerRuneGeo = new THREE.RingGeometry(0.3, 0.38, 32);
+      const innerRuneMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.15,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const innerRune = new THREE.Mesh(innerRuneGeo, innerRuneMat);
+      innerRune.rotation.x = -Math.PI / 2;
+      innerRune.position.y = 0.03;
+      group.add(innerRune);
+
+      // 6. Colored Point Light for atmospheric glow
+      const light = new THREE.PointLight(event.color, 2.0, 6.0, 1.5);
+      light.position.y = 1.6;
+      group.add(light);
+
+      this.scene.add(group);
+
+      this.eventWaypointObjects.push({
+        group,
+        orb,
+        ring1,
+        ring2,
+        beam,
+        light,
+        groundRune,
+        baseY: event.position.y,
+      });
     });
   }
 }
