@@ -111,7 +111,7 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
       {/* HTML5 Video Player */}
       <video
         ref={videoRef}
-        className="w-full h-full object-cover cursor-pointer"
+        className="w-full h-full object-contain cursor-pointer"
         playsInline
         preload="auto"
         onTimeUpdate={handleTimeUpdate}

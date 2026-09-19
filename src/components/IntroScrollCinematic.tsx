@@ -72,14 +72,16 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
 
     const hRatio = cw / iw;
     const vRatio = ch / ih;
-    const ratio = Math.max(hRatio, vRatio);
+    // Use contain ratio so full landscape frame is visible without cropping on mobile screens
+    const ratio = Math.min(hRatio, vRatio);
 
     const nw = iw * ratio;
     const nh = ih * ratio;
     const offsetX = (cw - nw) / 2;
     const offsetY = (ch - nh) / 2;
 
-    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, cw, ch);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, iw, ih, offsetX, offsetY, nw, nh);
@@ -381,7 +383,7 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
         {/* Layer 1: Living Intro Video Player (Plays continuously, loops 14s -> 23s without pause) */}
         <video
           ref={videoRef}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${
             isActivelyScrubbing ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           playsInline
@@ -400,7 +402,7 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
         {/* Layer 2: Interactive Frame Canvas (Fades in seamlessly as user scrubs frames) */}
         <canvas
           ref={canvasRef}
-          className={`absolute inset-0 w-full h-full object-cover block transition-opacity duration-300 ${
+          className={`absolute inset-0 w-full h-full object-contain block transition-opacity duration-300 ${
             isActivelyScrubbing ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           style={{ touchAction: 'none' }}

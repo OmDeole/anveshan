@@ -58,17 +58,18 @@ export const ScrollExperience: React.FC<ScrollExperienceProps> = ({ onComplete }
     const iw = img.naturalWidth || 1280;
     const ih = img.naturalHeight || 720;
 
-    // Cover math
+    // Contain math (letterboxed with black bars so all content is visible on mobile)
     const hRatio = cw / iw;
     const vRatio = ch / ih;
-    const ratio = Math.max(hRatio, vRatio);
+    const ratio = Math.min(hRatio, vRatio);
 
     const nw = iw * ratio;
     const nh = ih * ratio;
     const offsetX = (cw - nw) / 2;
     const offsetY = (ch - nh) / 2;
 
-    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, cw, ch);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, iw, ih, offsetX, offsetY, nw, nh);
@@ -263,7 +264,7 @@ export const ScrollExperience: React.FC<ScrollExperienceProps> = ({ onComplete }
         {/* Render Canvas */}
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-cover block"
+          className="w-full h-full object-contain block"
           style={{ touchAction: 'none' }}
         />
 
