@@ -1366,7 +1366,8 @@ export class Environment {
 
       // Pulsing beam intensity
       const beamMat = wp.beam.material as THREE.MeshBasicMaterial;
-      beamMat.opacity = 0.12 + Math.sin(t * 1.8) * 0.06;
+      beamMat.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
+
 
       // Pulsing ground rune
       const runeMat = wp.groundRune.material as THREE.MeshBasicMaterial;
@@ -1443,18 +1444,32 @@ export class Environment {
       ring2.rotation.z = Math.PI * 0.25;
       group.add(ring2);
 
-      // 4. Vertical Light Beam (soft pillar from ground to sky)
-      const beamGeo = new THREE.CylinderGeometry(0.06, 0.12, 5.0, 8, 1, true);
+      // 4. Vertical Celestial Light Beam (tall glowing pillar reaching high into the sky)
+      const beamGeo = new THREE.CylinderGeometry(0.12, 0.28, 26.0, 16, 1, true);
       const beamMat = new THREE.MeshBasicMaterial({
         color: color,
         transparent: true,
-        opacity: 0.14,
+        opacity: 0.38,
         depthWrite: false,
         side: THREE.DoubleSide,
       });
       const beam = new THREE.Mesh(beamGeo, beamMat);
-      beam.position.y = 2.5;
+      beam.position.y = 13.0;
       group.add(beam);
+
+      // Outer ethereal corona for the beam
+      const coronaGeo = new THREE.CylinderGeometry(0.35, 1.1, 26.0, 16, 1, true);
+      const coronaMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.15,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const corona = new THREE.Mesh(coronaGeo, coronaMat);
+      corona.position.y = 13.0;
+      group.add(corona);
+
 
       // 5. Ground Rune Circle (flat sigil ring on ground plane)
       const runeGeo = new THREE.RingGeometry(0.6, 0.75, 32);

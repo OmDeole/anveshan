@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
 import { Environment, SANCTUARY_EVENTS } from './Environment';
-import { InputState, SanctuaryEventId } from '../types';
+import { InputState, SanctuaryEventId, WaypointIndicatorData } from '../types';
 
 export class GameEngine {
   private container: HTMLElement;
@@ -14,15 +14,27 @@ export class GameEngine {
   public samurai: SamuraiCharacter;
   public environment: Environment;
 
-  // Event Waypoint Proximity Tracking
+  // Event Waypoint Tracking & Direction Indicators
   public onEventTriggered: ((eventId: SanctuaryEventId) => void) | null = null;
   public onNearEventChanged: ((eventId: SanctuaryEventId | null) => void) | null = null;
+  public onWaypointsUpdate: ((waypoints: WaypointIndicatorData[]) => void) | null = null;
   public isEventModalOpen: boolean = false;
   public lastTriggeredEventId: SanctuaryEventId | null = null;
   public nearbyEventId: SanctuaryEventId | null = null;
 
+  // 3D In-world Direction Guidance Ring (chevrons under character pointing to events)
+  private directionRingGroup!: THREE.Group;
+  private waypointPointers: {
+    group: THREE.Group;
+    chevron: THREE.Mesh;
+    pulseLight: THREE.PointLight;
+    eventId: SanctuaryEventId;
+    color: number;
+  }[] = [];
+
   // Input & Physics
   private input: InputState = {
+
     forward: false,
     backward: false,
     left: false,
@@ -86,10 +98,14 @@ export class GameEngine {
     this.samurai.group.position.copy(this.characterPos);
     this.scene.add(this.samurai.group);
 
+    // 4b. Direction guidance ring around character
+    this.setupDirectionGuidance();
+
     // Initialize camera position behind character facing Mt Fuji
     const initOffset = this.calculateCameraOffset();
     this.currentCameraPos.copy(this.characterPos).add(initOffset);
     this.camera.position.copy(this.currentCameraPos);
+
 
     // 5. Event Listeners
     this.setupEventListeners();
@@ -132,7 +148,73 @@ export class GameEngine {
     }
   }
 
+  /**
+   * Set up in-world 3D directional guidance ring around samurai
+   * Creates glowing color-coded chevrons pointing toward each Sanctuary Event
+   */
+  private setupDirectionGuidance() {
+    this.directionRingGroup = new THREE.Group();
+
+    // 1. Subtle perimeter aura ring on the ground around the samurai
+    const ringGeo = new THREE.RingGeometry(1.2, 1.26, 48);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.16,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.02;
+    this.directionRingGroup.add(ring);
+
+    // 2. Chevron arrow geometry pointing outward
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0.42); // Tip pointing forward
+    shape.lineTo(-0.16, -0.12);
+    shape.lineTo(0, 0.04);
+    shape.lineTo(0.16, -0.12);
+    shape.closePath();
+
+    const chevronGeo = new THREE.ShapeGeometry(shape);
+    chevronGeo.rotateX(-Math.PI / 2); // Lay flat on XZ plane
+
+    SANCTUARY_EVENTS.forEach((ev) => {
+      const pGroup = new THREE.Group();
+
+      const mat = new THREE.MeshBasicMaterial({
+        color: ev.color,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+
+      const chevron = new THREE.Mesh(chevronGeo, mat);
+      chevron.position.y = 0.03;
+      pGroup.add(chevron);
+
+      // Soft colored point glow for the pointer
+      const pLight = new THREE.PointLight(ev.color, 0.8, 2.5);
+      pLight.position.y = 0.2;
+      pGroup.add(pLight);
+
+      this.directionRingGroup.add(pGroup);
+      this.waypointPointers.push({
+        group: pGroup,
+        chevron,
+        pulseLight: pLight,
+        eventId: ev.id,
+        color: ev.color,
+      });
+    });
+
+    this.scene.add(this.directionRingGroup);
+  }
+
   private setupEventListeners() {
+
     window.addEventListener('resize', this.onResize);
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
@@ -487,9 +569,82 @@ export class GameEngine {
         this.onNearEventChanged(foundNearby);
       }
     }
+
+    // 8. Update in-world 3D Direction Guidance Ring and Pointers
+    if (this.directionRingGroup) {
+      this.directionRingGroup.position.set(
+        this.characterPos.x,
+        groundHeight + 0.04,
+        this.characterPos.z
+      );
+
+      const time = performance.now() * 0.003;
+
+      this.waypointPointers.forEach((item, idx) => {
+        const ev = SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
+        if (!ev) return;
+
+        const dx = ev.position.x - this.characterPos.x;
+        const dz = ev.position.z - this.characterPos.z;
+        const dist = Math.hypot(dx, dz);
+        const angle = Math.atan2(dx, dz); // Direction angle in XZ plane
+
+        // Position pointer along ring around character
+        const ringRadius = 1.25;
+        item.group.position.x = Math.sin(angle) * ringRadius;
+        item.group.position.z = Math.cos(angle) * ringRadius;
+
+        // Orient pointer so its tip points directly towards the event
+        item.group.rotation.y = angle;
+
+        // Gentle floating animation
+        const hover = Math.sin(time * 3 + idx * 2) * 0.02;
+        item.chevron.position.y = 0.03 + hover;
+
+        // Pulsing glow (pulses faster when close to event)
+        const isClose = dist < 5.0;
+        const pulseSpeed = isClose ? 6.0 : 2.8;
+        const pulse = 0.65 + Math.sin(time * pulseSpeed + idx) * 0.25;
+        (item.chevron.material as THREE.MeshBasicMaterial).opacity = pulse;
+        item.pulseLight.intensity = pulse * (isClose ? 1.5 : 0.8);
+      });
+    }
+
+    // 9. Update Screen-Relative Direction & Distance for HUD Compass
+    if (this.onWaypointsUpdate) {
+      // Camera forward vector in XZ plane
+      const camFwdX = this.cameraLookTarget.x - this.camera.position.x;
+      const camFwdZ = this.cameraLookTarget.z - this.camera.position.z;
+      const camYaw = Math.atan2(camFwdX, -camFwdZ);
+
+      const waypointsData: WaypointIndicatorData[] = SANCTUARY_EVENTS.map((event) => {
+        const dx = event.position.x - this.characterPos.x;
+        const dz = event.position.z - this.characterPos.z;
+        const distance = Math.hypot(dx, dz);
+        const eventAngle = Math.atan2(dx, -dz);
+
+        let diff = (eventAngle - camYaw) * (180 / Math.PI);
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+
+        return {
+          id: event.id,
+          name: event.name,
+          kanji: event.kanji,
+          tagline: event.tagline,
+          colorHex: event.colorHex,
+          distance: Math.round(distance),
+          relativeAngleDeg: Math.round(diff),
+          isNearby: distance <= 3.2,
+        };
+      });
+
+      this.onWaypointsUpdate(waypointsData);
+    }
   }
 
   private tick = () => {
+
     if (!this.isRunning) return;
 
     const delta = Math.min(this.clock.getDelta(), 0.1);
@@ -519,9 +674,13 @@ export class GameEngine {
   public destroy() {
     this.stop();
     this.removeEventListeners();
+    if (this.directionRingGroup && this.directionRingGroup.parent) {
+      this.directionRingGroup.parent.remove(this.directionRingGroup);
+    }
     if (this.renderer.domElement && this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
     this.renderer.dispose();
   }
+
 }

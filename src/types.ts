@@ -30,3 +30,15 @@ export interface SanctuaryEventData {
   color: number;
   colorHex: string;
 }
+
+export interface WaypointIndicatorData {
+  id: SanctuaryEventId;
+  name: string;
+  kanji: string;
+  tagline: string;
+  colorHex: string;
+  distance: number;
+  relativeAngleDeg: number;
+  isNearby: boolean;
+}
+

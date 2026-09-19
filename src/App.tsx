@@ -8,11 +8,12 @@ import { GameEngine } from './game/GameEngine';
 import { VirtualJoystick } from './components/VirtualJoystick';
 import { GameHUD } from './components/GameHUD';
 import { IntroScrollCinematic } from './components/IntroScrollCinematic';
-import { SanctuaryEventId } from './types';
+import { SanctuaryEventId, WaypointIndicatorData } from './types';
 import { SANCTUARY_EVENTS } from './game/Environment';
 import { TechTreasureHunt } from './components/events/TechTreasureHunt';
 import { Promptify } from './components/events/Promptify';
 import { LogicLamps } from './components/events/LogicLamps';
+import { EventCompass } from './components/EventCompass';
 
 type AppPhase = 'cinematic' | 'game';
 
@@ -28,6 +29,8 @@ export default function App() {
   // Active Sanctuary Event Modal ('tech-treasure-hunt' | 'promptify' | 'logic-lamps' | null)
   const [activeEvent, setActiveEvent] = useState<SanctuaryEventId | null>(null);
   const [nearbyEvent, setNearbyEvent] = useState<SanctuaryEventId | null>(null);
+  const [waypoints, setWaypoints] = useState<WaypointIndicatorData[]>([]);
+
 
   // Transition from cinematic scroll to 3D game
   const handleCinematicComplete = () => {
@@ -80,6 +83,10 @@ export default function App() {
 
     engine.onNearEventChanged = (eventId) => {
       setNearbyEvent(eventId);
+    };
+
+    engine.onWaypointsUpdate = (data) => {
+      setWaypoints(data);
     };
 
     setIsLoading(false);
@@ -149,6 +156,19 @@ export default function App() {
             </div>
           )}
 
+          {/* Continuous Event Direction Compass HUD */}
+          {!isLoading && !activeEvent && (
+            <EventCompass
+              waypoints={waypoints}
+              onOpenEvent={(id) => {
+                setActiveEvent(id);
+                if (engineRef.current) {
+                  engineRef.current.setEventModalOpen(true);
+                }
+              }}
+            />
+          )}
+
           {/* Overlay HUD (Camera controls, background audio on/off, fullscreen) */}
           <GameHUD onResetCamera={handleResetCamera} isSprinting={isSprinting} />
 
@@ -162,7 +182,7 @@ export default function App() {
 
           {/* Proximity Interaction Prompt (when close to a waypoint and modal is closed) */}
           {nearbyEvent && !activeEvent && (
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
+            <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
               <button
                 type="button"
                 onClick={handleOpenNearbyEvent}
@@ -178,6 +198,7 @@ export default function App() {
               </button>
             </div>
           )}
+
 
           {/* Active Sanctuary Event Modal Pages */}
           {activeEvent === 'tech-treasure-hunt' && (
