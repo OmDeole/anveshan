@@ -346,31 +346,59 @@ export class GameEngine {
       const targetFacing = moveAngle + Math.PI; // Face forward along direction
       this.samurai.setFacingAngle(targetFacing);
 
-      // Move in world space
+      // Move in world space with boundary check
+      const prevX = this.characterPos.x;
+      const prevZ = this.characterPos.z;
+
       const moveDirX = Math.sin(moveAngle);
       const moveDirZ = Math.cos(moveAngle);
 
       this.characterPos.x += moveDirX * speed * delta;
       this.characterPos.z += moveDirZ * speed * delta;
+
+      // 3. Multi-Zone Sanctuary Boundary & Collision
+      // Check if candidate position is within any of the 4 interconnected spaces:
+      const isInSanctuary = (x: number, z: number) => {
+        // Zone 0: Central Sanctuary Courtyard (Hub)
+        if (x >= -15.5 && x <= 18.5 && z >= -12.0 && z <= 12.0) return true;
+        // Zone 1: West Bridge & Fuji Overlook (Tech Treasure Hunt: beacon at -32, 0)
+        if (x >= -40.5 && x <= -15.0 && z >= -8.5 && z <= 8.5) return true;
+        // Zone 2: South Torii Avenue & Sakura Grove (Promptify: beacon at 0, 30)
+        if (x >= -9.5 && x <= 9.5 && z >= 11.5 && z <= 40.5) return true;
+        // Zone 3: Pagoda Platform & East Moon Pavilion (Logic Lamps: beacon at 33, 1)
+        if (x >= 2.5 && x <= 41.5 && z >= -7.5 && z <= 9.5) return true;
+        return false;
+      };
+
+      if (!isInSanctuary(this.characterPos.x, this.characterPos.z)) {
+        // Attempt slide on X
+        if (isInSanctuary(this.characterPos.x, prevZ)) {
+          this.characterPos.z = prevZ;
+        } else if (isInSanctuary(prevX, this.characterPos.z)) {
+          this.characterPos.x = prevX;
+        } else {
+          this.characterPos.x = prevX;
+          this.characterPos.z = prevZ;
+        }
+      }
     }
 
-    // 3. Terrain collision & boundaries
-    // Keep character within scenic playable mountain terrace
-    this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -14.5, 17.0);
-    this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -11.5, 11.5);
+    // Safety outer world clamp
+    this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
+    this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
 
-    // Calculate Ground Height dynamically based on terrace / pagoda base
-    let groundHeight = 0.7; // Base stone terrace height
+    // Calculate Ground Height dynamically based on zone elevations
+    let groundHeight = 0.7; // Base stone terrace height for Hub, Overlook, and Torii Grove
 
-    // Check if on the Pagoda raised stone platform
-    if (this.characterPos.x >= 2.5 && this.characterPos.x <= 18.0 &&
-        this.characterPos.z >= -6.5 && this.characterPos.z <= 8.5) {
+    // Check if on the Pagoda raised stone platform or East Moon Pavilion
+    if (this.characterPos.x >= 2.5 && this.characterPos.x <= 41.5 &&
+        this.characterPos.z >= -7.5 && this.characterPos.z <= 9.5) {
       if (this.characterPos.x < 3.8) {
         // On stone steps transition
         const stepProgress = (this.characterPos.x - 2.5) / 1.3;
         groundHeight = 0.7 + stepProgress * 0.8;
       } else {
-        groundHeight = 1.5; // Pagoda platform deck
+        groundHeight = 1.5; // Raised Pagoda and Moon Pavilion platform deck
       }
     }
 

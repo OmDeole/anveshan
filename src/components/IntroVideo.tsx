@@ -6,7 +6,7 @@ interface IntroVideoProps {
   onComplete: (stopTime?: number) => void;
 }
 
-const INTRO_CUTOFF_SECONDS = 14.0;
+const INTRO_CUTOFF_SECONDS = 15.0;
 
 export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,6 +16,14 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
   const hasTriggeredEndRef = useRef(false);
+
+  const [isMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.innerWidth <= 768 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    );
+  });
 
   // Attempt autoplay on mount
   useEffect(() => {
@@ -111,7 +119,8 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
       {/* HTML5 Video Player */}
       <video
         ref={videoRef}
-        className="w-full h-full object-contain cursor-pointer"
+        key={isMobile ? 'mobile' : 'desktop'}
+        className="w-full h-full object-cover cursor-pointer"
         playsInline
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
@@ -122,8 +131,17 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
           }
         }}
       >
-        <source src="/japvidanveshan.mp4" type="video/mp4" />
-        <source src="/japvidanveshan.mov" type="video/quicktime" />
+        {isMobile ? (
+          <>
+            <source src="/mobile_intro.mp4" type="video/mp4" />
+            <source src="/mobile_intro.mov" type="video/quicktime" />
+          </>
+        ) : (
+          <>
+            <source src="/japvidanveshan.mp4" type="video/mp4" />
+            <source src="/japvidanveshan.mov" type="video/quicktime" />
+          </>
+        )}
         Your browser does not support video playback.
       </video>
 

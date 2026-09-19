@@ -7,13 +7,33 @@ interface IntroScrollCinematicProps {
 }
 
 const TOTAL_FRAMES = 240;
-const INTRO_PROMPT_SECONDS = 14.0;
+const INTRO_PROMPT_SECONDS = 15.0;
 const VIDEO_LOOP_END_SECONDS = 23.0;
 
 export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onComplete }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Mobile device detection for dedicated mobile portrait video
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.innerWidth <= 768 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    );
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile =
+        window.innerWidth <= 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+    };
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Intro video states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -72,16 +92,15 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
 
     const hRatio = cw / iw;
     const vRatio = ch / ih;
-    // Use contain ratio so full landscape frame is visible without cropping on mobile screens
-    const ratio = Math.min(hRatio, vRatio);
+    // Crop the scroll video to fill the screen on mobile devices (cover)
+    const ratio = Math.max(hRatio, vRatio);
 
     const nw = iw * ratio;
     const nh = ih * ratio;
     const offsetX = (cw - nw) / 2;
     const offsetY = (ch - nh) / 2;
 
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, cw, ch);
+    ctx.clearRect(0, 0, cw, ch);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, iw, ih, offsetX, offsetY, nw, nh);
@@ -166,7 +185,7 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
     };
 
     startPlay();
-  }, []);
+  }, [isMobile]);
 
   const handleManualStart = async () => {
     const video = videoRef.current;
@@ -380,10 +399,11 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
     >
       {/* Sticky Viewport Container */}
       <div className="sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center bg-black">
-        {/* Layer 1: Living Intro Video Player (Plays continuously, loops 14s -> 23s without pause) */}
+        {/* Layer 1: Living Intro Video Player (Plays continuously, loops 15s -> 23s without pause) */}
         <video
           ref={videoRef}
-          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${
+          key={isMobile ? 'mobile-video' : 'desktop-video'}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
             isActivelyScrubbing ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           playsInline
@@ -394,15 +414,24 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
             if (needsInteraction) handleManualStart();
           }}
         >
-          <source src="/japvidanveshan.mp4" type="video/mp4" />
-          <source src="/japvidanveshan.mov" type="video/quicktime" />
+          {isMobile ? (
+            <>
+              <source src="/mobile_intro.mp4" type="video/mp4" />
+              <source src="/mobile_intro.mov" type="video/quicktime" />
+            </>
+          ) : (
+            <>
+              <source src="/japvidanveshan.mp4" type="video/mp4" />
+              <source src="/japvidanveshan.mov" type="video/quicktime" />
+            </>
+          )}
           Your browser does not support video playback.
         </video>
 
         {/* Layer 2: Interactive Frame Canvas (Fades in seamlessly as user scrubs frames) */}
         <canvas
           ref={canvasRef}
-          className={`absolute inset-0 w-full h-full object-contain block transition-opacity duration-300 ${
+          className={`absolute inset-0 w-full h-full object-cover block transition-opacity duration-300 ${
             isActivelyScrubbing ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           style={{ touchAction: 'none' }}

@@ -7,7 +7,7 @@ export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
     name: 'Tech Treasure Hunt',
     kanji: '宝探し',
     tagline: 'Fuji Panoramic Overlook',
-    position: { x: -6.0, y: 0.7, z: -6.5 },
+    position: { x: -32.0, y: 0.7, z: 0.0 },
     color: 0xf59e0b, // Amber gold
     colorHex: '#f59e0b',
   },
@@ -15,8 +15,8 @@ export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
     id: 'promptify',
     name: 'Promptify',
     kanji: '詠唱',
-    tagline: 'Sakura Grove Passage',
-    position: { x: -8.5, y: 0.7, z: 3.5 },
+    tagline: 'Sacred Torii Sakura Grove',
+    position: { x: 0.0, y: 0.7, z: 30.0 },
     color: 0xc084fc, // Ethereal purple
     colorHex: '#c084fc',
   },
@@ -24,8 +24,8 @@ export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
     id: 'logic-lamps',
     name: 'Logic Lamps',
     kanji: '論理灯',
-    tagline: 'Chureito Pagoda Steps',
-    position: { x: 4.2, y: 1.5, z: -1.5 },
+    tagline: 'Moon Pavilion & Pagoda Gardens',
+    position: { x: 33.0, y: 1.5, z: 1.0 },
     color: 0x34d399, // Sacred emerald/teal
     colorHex: '#34d399',
   },
@@ -57,6 +57,9 @@ export class Environment {
     this.createMountFuji();
     this.createTerrainAndCourtyard();
     this.createChureitoPagoda();
+    this.createWestOverlookPlatform();
+    this.createToriiGatePassage();
+    this.createMoonPavilion();
     this.createSakuraTrees();
     this.createStoneLanterns();
     this.createWoodenRailings();
@@ -250,45 +253,66 @@ export class Environment {
 
   /**
    * Paved temple terrace, stone paths, steps, and rock retaining walls
+   * Expanded with 3 distinct interconnected spaces:
+   * 1. Central Courtyard (Hub)
+   * 2. West Fuji Overlook Terrace (Tech Treasure Hunt)
+   * 3. South Torii Sakura Grove (Promptify)
+   * 4. East Moon Pavilion & Pagoda Gardens (Logic Lamps)
    */
   private createTerrainAndCourtyard() {
-    // 1. Lower Mountain Base Terrain
-    const baseTerrainGeo = new THREE.PlaneGeometry(160, 160, 32, 32);
+    // 1. Lower Mountain Base Terrain - Expansively sized to cover all 4 areas
+    const baseTerrainGeo = new THREE.PlaneGeometry(280, 280, 48, 48);
     const pos = baseTerrainGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i);
-      // Gentle slope dropping down into valley in front
-      const drop = Math.max(0, -y - 10) * 0.25;
-      pos.setZ(i, Math.sin(x * 0.08) * 1.5 + Math.cos(y * 0.08) * 1.5 - drop);
+      // Gentle rolling mountain terrain dropping down to valley
+      const drop = Math.max(0, -y - 10) * 0.22;
+      pos.setZ(i, Math.sin(x * 0.05) * 1.8 + Math.cos(y * 0.05) * 1.8 - drop);
     }
     baseTerrainGeo.computeVertexNormals();
 
     const grassMat = new THREE.MeshStandardMaterial({
-      color: 0x5b7052,
+      color: 0x556b4f, // Verdant mountain moss grass
       roughness: 0.85,
       flatShading: true,
     });
     const baseTerrain = new THREE.Mesh(baseTerrainGeo, grassMat);
     baseTerrain.rotation.x = -Math.PI / 2;
-    baseTerrain.position.set(0, -1.8, 0);
+    baseTerrain.position.set(0, -1.8, 8);
     baseTerrain.receiveShadow = true;
     this.scene.add(baseTerrain);
 
-    // 2. Main Overlook Stone Terrace (Where player walks and views Fuji)
+    // Stone Materials
     const terraceMat = new THREE.MeshStandardMaterial({
-      color: 0x94a3b8, // Light stone
+      color: 0x94a3b8, // Light ashlar stone
       roughness: 0.65,
       flatShading: true,
     });
-    const terraceGeo = new THREE.BoxGeometry(32, 1.4, 26);
-    const terrace = new THREE.Mesh(terraceGeo, terraceMat);
-    terrace.position.set(0, 0, 0);
-    terrace.receiveShadow = true;
-    terrace.castShadow = true;
-    this.scene.add(terrace);
+    const pagodaBaseMat = new THREE.MeshStandardMaterial({
+      color: 0x64748b, // Dressed temple granite
+      roughness: 0.7,
+      flatShading: true,
+    });
+    const slabMat = new THREE.MeshStandardMaterial({
+      color: 0xcfd8dc,
+      roughness: 0.5,
+      flatShading: true,
+    });
+    const darkWoodMat = new THREE.MeshStandardMaterial({
+      color: 0x3e2723, // Weathered Japanese cedar decking
+      roughness: 0.75,
+      flatShading: true,
+    });
 
-    // Add collider for main terrace surface
+    // 2. Central Sanctuary Courtyard (Starting Hub)
+    const centralTerraceGeo = new THREE.BoxGeometry(32, 1.4, 26);
+    const centralTerrace = new THREE.Mesh(centralTerraceGeo, terraceMat);
+    centralTerrace.position.set(0, 0, 0);
+    centralTerrace.receiveShadow = true;
+    centralTerrace.castShadow = true;
+    this.scene.add(centralTerrace);
+
     this.colliders.push({
       minX: -16,
       maxX: 16,
@@ -297,12 +321,7 @@ export class Environment {
       height: 0.7,
     });
 
-    // 3. Pagoda Raised Stone Foundation (Right Side)
-    const pagodaBaseMat = new THREE.MeshStandardMaterial({
-      color: 0x64748b, // Darker dressed ashlar stone
-      roughness: 0.7,
-      flatShading: true,
-    });
+    // 3. Pagoda Raised Stone Foundation (Right Side of Hub)
     const pagodaBaseGeo = new THREE.BoxGeometry(16, 2.2, 16);
     const pagodaBase = new THREE.Mesh(pagodaBaseGeo, pagodaBaseMat);
     pagodaBase.position.set(11, 0.4, 1);
@@ -310,7 +329,6 @@ export class Environment {
     pagodaBase.castShadow = true;
     this.scene.add(pagodaBase);
 
-    // Add foundation collider
     this.colliders.push({
       minX: 3,
       maxX: 19,
@@ -319,32 +337,140 @@ export class Environment {
       height: 1.5,
     });
 
-    // 4. Stone Pathway Slabs on Courtyard
-    const slabMat = new THREE.MeshStandardMaterial({
-      color: 0xcfd8dc,
-      roughness: 0.5,
-      flatShading: true,
-    });
-    for (let z = -11; z <= 11; z += 1.8) {
-      const slab = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 1.4), slabMat);
-      slab.position.set(-2.5, 0.74, z);
-      slab.receiveShadow = true;
-      this.scene.add(slab);
-    }
-    for (let x = -2; x <= 7; x += 1.8) {
-      const slab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 2.2), slabMat);
-      slab.position.set(x, 0.74, 1);
-      slab.receiveShadow = true;
-      this.scene.add(slab);
-    }
-
-    // 5. Stone Steps leading up to the Pagoda Terrace
+    // Steps leading up to Pagoda Platform from Hub
     for (let s = 0; s < 4; s++) {
       const step = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.22, 0.6), slabMat);
       step.position.set(2.4 - s * 0.55, 0.75 + s * 0.2, 1);
       step.receiveShadow = true;
       step.castShadow = true;
       this.scene.add(step);
+    }
+
+    // 4. ZONE 1: WEST FUJI OVERLOOK TERRACE (Tech Treasure Hunt)
+    // Connecting Stone Promenade / Bridge to the West
+    const westBridgeGeo = new THREE.BoxGeometry(12, 1.4, 7.5);
+    const westBridge = new THREE.Mesh(westBridgeGeo, terraceMat);
+    westBridge.position.set(-21, 0, 0);
+    westBridge.receiveShadow = true;
+    westBridge.castShadow = true;
+    this.scene.add(westBridge);
+
+    // Large Mountain Overlook Platform
+    const westOverlookGeo = new THREE.BoxGeometry(18, 1.4, 18);
+    const westOverlook = new THREE.Mesh(westOverlookGeo, terraceMat);
+    westOverlook.position.set(-32, 0, 0);
+    westOverlook.receiveShadow = true;
+    westOverlook.castShadow = true;
+    this.scene.add(westOverlook);
+
+    // Decorative perimeter stone kerbs for West Overlook
+    const westInlay = new THREE.Mesh(new THREE.BoxGeometry(15, 0.05, 15), slabMat);
+    westInlay.position.set(-32, 0.73, 0);
+    westInlay.receiveShadow = true;
+    this.scene.add(westInlay);
+
+    this.colliders.push({
+      minX: -41,
+      maxX: -15,
+      minZ: -9,
+      maxZ: 9,
+      height: 0.7,
+    });
+
+    // 5. ZONE 2: SOUTH SACRED TORII SAKURA GROVE (Promptify)
+    // Flagstone Avenue extending South from Central Courtyard
+    const southAvenueGeo = new THREE.BoxGeometry(7.5, 1.4, 12);
+    const southAvenue = new THREE.Mesh(southAvenueGeo, terraceMat);
+    southAvenue.position.set(0, 0, 18);
+    southAvenue.receiveShadow = true;
+    southAvenue.castShadow = true;
+    this.scene.add(southAvenue);
+
+    // Expansive Sakura Grove Terrace
+    const southGroveGeo = new THREE.BoxGeometry(20, 1.4, 20);
+    const southGrove = new THREE.Mesh(southGroveGeo, terraceMat);
+    southGrove.position.set(0, 0, 31);
+    southGrove.receiveShadow = true;
+    southGrove.castShadow = true;
+    this.scene.add(southGrove);
+
+    // Mossy circular garden inlay in Sakura Grove
+    const groveInlayMat = new THREE.MeshStandardMaterial({
+      color: 0x4a5d45,
+      roughness: 0.9,
+      flatShading: true,
+    });
+    const groveInlay = new THREE.Mesh(new THREE.CylinderGeometry(8.0, 8.0, 0.06, 24), groveInlayMat);
+    groveInlay.position.set(0, 0.73, 31);
+    groveInlay.receiveShadow = true;
+    this.scene.add(groveInlay);
+
+    this.colliders.push({
+      minX: -10,
+      maxX: 10,
+      minZ: 12,
+      maxZ: 41,
+      height: 0.7,
+    });
+
+    // 6. ZONE 3: EAST MOON PAVILION & UPPER GARDENS (Logic Lamps)
+    // Elevated bridge extending East from Pagoda Foundation
+    const eastBridgeGeo = new THREE.BoxGeometry(9, 2.2, 7.5);
+    const eastBridge = new THREE.Mesh(eastBridgeGeo, pagodaBaseMat);
+    eastBridge.position.set(23.5, 0.4, 1);
+    eastBridge.receiveShadow = true;
+    eastBridge.castShadow = true;
+    this.scene.add(eastBridge);
+
+    // Elevated Moon Pavilion Terrace (height 1.5)
+    const moonTerraceGeo = new THREE.BoxGeometry(18, 2.2, 18);
+    const moonTerrace = new THREE.Mesh(moonTerraceGeo, pagodaBaseMat);
+    moonTerrace.position.set(33, 0.4, 1);
+    moonTerrace.receiveShadow = true;
+    moonTerrace.castShadow = true;
+    this.scene.add(moonTerrace);
+
+    // Wooden deck inlay for Moon Pavilion
+    const deckInlay = new THREE.Mesh(new THREE.BoxGeometry(15, 0.05, 15), darkWoodMat);
+    deckInlay.position.set(33, 1.53, 1);
+    deckInlay.receiveShadow = true;
+    this.scene.add(deckInlay);
+
+    this.colliders.push({
+      minX: 18,
+      maxX: 42,
+      minZ: -8,
+      maxZ: 10,
+      height: 1.5,
+    });
+
+    // 7. Stone Pathway Pavers connecting Hub routes
+    for (let z = -11; z <= 11; z += 1.8) {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 1.4), slabMat);
+      slab.position.set(-2.5, 0.74, z);
+      slab.receiveShadow = true;
+      this.scene.add(slab);
+    }
+    // Path heading East to Pagoda steps
+    for (let x = -2; x <= 3; x += 1.6) {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 2.4), slabMat);
+      slab.position.set(x, 0.74, 1);
+      slab.receiveShadow = true;
+      this.scene.add(slab);
+    }
+    // Path heading West across West Bridge
+    for (let x = -15; x >= -32; x -= 2.0) {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 2.6), slabMat);
+      slab.position.set(x, 0.74, 0);
+      slab.receiveShadow = true;
+      this.scene.add(slab);
+    }
+    // Path heading South across Torii Avenue
+    for (let z = 11; z <= 30; z += 2.0) {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.08, 1.6), slabMat);
+      slab.position.set(0, 0.74, z);
+      slab.receiveShadow = true;
+      this.scene.add(slab);
     }
   }
 
@@ -549,6 +675,318 @@ export class Environment {
   }
 
   /**
+   * ZONE 1: West Mountain Overlook Platform (Tech Treasure Hunt)
+   * A breathtaking panoramic terrace cantilevered over the valley directly facing Mt. Fuji
+   */
+  private createWestOverlookPlatform() {
+    const group = new THREE.Group();
+
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x78869b,
+      roughness: 0.8,
+      flatShading: true,
+    });
+    const woodMat = new THREE.MeshStandardMaterial({
+      color: 0x2b221d,
+      roughness: 0.75,
+      flatShading: true,
+    });
+
+    // 1. Bridge Railings on both sides of West Connecting Promenade
+    const bridgeLength = 11;
+    [-3.6, 3.6].forEach((zOffset) => {
+      const top = new THREE.Mesh(new THREE.BoxGeometry(bridgeLength, 0.1, 0.14), woodMat);
+      top.position.set(-21, 1.65, zOffset);
+      const mid = new THREE.Mesh(new THREE.BoxGeometry(bridgeLength, 0.08, 0.1), woodMat);
+      mid.position.set(-21, 1.2, zOffset);
+      group.add(top, mid);
+
+      for (let x = -26; x <= -16; x += 1.8) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), woodMat);
+        post.position.set(x, 1.2, zOffset);
+        post.castShadow = true;
+        group.add(post);
+      }
+    });
+
+    // 2. Overlook Perimeter Railings (North, West, South edges)
+    // North edge railing (z = -8.8)
+    const nRailTop = new THREE.Mesh(new THREE.BoxGeometry(18, 0.1, 0.14), woodMat);
+    nRailTop.position.set(-32, 1.65, -8.8);
+    const nRailMid = new THREE.Mesh(new THREE.BoxGeometry(18, 0.08, 0.1), woodMat);
+    nRailMid.position.set(-32, 1.2, -8.8);
+    group.add(nRailTop, nRailMid);
+    for (let x = -40.5; x <= -23.5; x += 1.8) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), woodMat);
+      post.position.set(x, 1.2, -8.8);
+      group.add(post);
+    }
+
+    // South edge railing (z = 8.8)
+    const sRailTop = new THREE.Mesh(new THREE.BoxGeometry(18, 0.1, 0.14), woodMat);
+    sRailTop.position.set(-32, 1.65, 8.8);
+    const sRailMid = new THREE.Mesh(new THREE.BoxGeometry(18, 0.08, 0.1), woodMat);
+    sRailMid.position.set(-32, 1.2, 8.8);
+    group.add(sRailTop, sRailMid);
+    for (let x = -40.5; x <= -23.5; x += 1.8) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), woodMat);
+      post.position.set(x, 1.2, 8.8);
+      group.add(post);
+    }
+
+    // West edge railing facing Fuji (x = -40.8)
+    const wRailTop = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 17.6), woodMat);
+    wRailTop.position.set(-40.8, 1.65, 0);
+    const wRailMid = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 17.6), woodMat);
+    wRailMid.position.set(-40.8, 1.2, 0);
+    group.add(wRailTop, wRailMid);
+    for (let z = -8.5; z <= 8.5; z += 1.8) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), woodMat);
+      post.position.set(-40.8, 1.2, z);
+      group.add(post);
+    }
+
+    // 3. Panoramic Viewing Monument / Altar (Stone pillar overlooking Fuji)
+    const stelaBase = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 1.2), stoneMat);
+    stelaBase.position.set(-38.5, 0.9, 0);
+    const stela = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.6, 0.7), stoneMat);
+    stela.position.set(-38.5, 1.8, 0);
+    const stelaCap = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.85), stoneMat);
+    stelaCap.position.set(-38.5, 2.7, 0);
+    group.add(stelaBase, stela, stelaCap);
+
+    // 4. Overlook Stone Viewing Benches
+    [-4.5, 4.5].forEach((zBench) => {
+      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.35, 0.9), stoneMat);
+      bench.position.set(-34, 0.9, zBench);
+      bench.castShadow = true;
+      group.add(bench);
+    });
+
+    this.scene.add(group);
+  }
+
+  /**
+   * ZONE 2: South Torii Sakura Grove (Promptify)
+   * A sacred ceremonial avenue lined with vermilion Torii gates leading into a blooming garden
+   */
+  private createToriiGatePassage() {
+    const toriiGroup = new THREE.Group();
+
+    const vermilionMat = new THREE.MeshStandardMaterial({
+      color: 0xc83226,
+      roughness: 0.5,
+      metalness: 0.1,
+      flatShading: true,
+    });
+    const blackCapMat = new THREE.MeshStandardMaterial({
+      color: 0x18181b,
+      roughness: 0.6,
+      flatShading: true,
+    });
+    const goldMat = new THREE.MeshStandardMaterial({
+      color: 0xeab308,
+      roughness: 0.3,
+      metalness: 0.8,
+    });
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x64748b,
+      roughness: 0.8,
+      flatShading: true,
+    });
+
+    // 4 Torii Gates along the South Avenue at z = 13.5, 16.5, 19.5, 22.5
+    const gateZPositions = [13.5, 16.5, 19.5, 22.5];
+    gateZPositions.forEach((zPos, idx) => {
+      const gate = new THREE.Group();
+      gate.position.set(0, 0.7, zPos);
+
+      // Gate dimensions: width ~4.6m, height ~3.8m
+      const halfW = 2.2 + idx * 0.05;
+
+      // Two vertical pillars (Hashira)
+      [-halfW, halfW].forEach((xSide) => {
+        // Stone foundation pedestal (Kamebara)
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.32, 0.35, 8), stoneMat);
+        base.position.set(xSide, 0.17, 0);
+        base.castShadow = true;
+        gate.add(base);
+
+        // Pillar column
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 3.4, 8), vermilionMat);
+        pillar.position.set(xSide, 1.85, 0);
+        pillar.castShadow = true;
+        gate.add(pillar);
+      });
+
+      // Upper curved lintel (Kasagi & Shimaki)
+      const lintelW = halfW * 2 + 1.6;
+      const lintel = new THREE.Mesh(new THREE.BoxGeometry(lintelW, 0.28, 0.38), vermilionMat);
+      lintel.position.set(0, 3.5, 0);
+      lintel.castShadow = true;
+      gate.add(lintel);
+
+      // Black top roof cap
+      const topCap = new THREE.Mesh(new THREE.BoxGeometry(lintelW + 0.3, 0.12, 0.46), blackCapMat);
+      topCap.position.set(0, 3.68, 0);
+      gate.add(topCap);
+
+      // Secondary horizontal tie beam (Nuki)
+      const tieBeam = new THREE.Mesh(new THREE.BoxGeometry(halfW * 2 + 0.6, 0.2, 0.26), vermilionMat);
+      tieBeam.position.set(0, 2.9, 0);
+      gate.add(tieBeam);
+
+      // Central tablet strut (Gakuzuka)
+      const tablet = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.55, 0.12), blackCapMat);
+      tablet.position.set(0, 3.2, 0);
+      const plaque = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.45, 0.14), goldMat);
+      plaque.position.set(0, 3.2, 0);
+      gate.add(tablet, plaque);
+
+      toriiGroup.add(gate);
+    });
+
+    // Zen stone arrangements in the Sakura Grove around Promptify
+    const zenRockMat = new THREE.MeshStandardMaterial({
+      color: 0x475569,
+      roughness: 0.9,
+      flatShading: true,
+    });
+    const rockConfigs = [
+      { x: -5, z: 27, s: 1.2 },
+      { x: -6, z: 28.5, s: 0.8 },
+      { x: 5.5, z: 28, s: 1.4 },
+      { x: 6.2, z: 26.5, s: 0.9 },
+      { x: -4.5, z: 35, s: 1.1 },
+      { x: 5, z: 35.5, s: 1.3 },
+    ];
+    rockConfigs.forEach((rc) => {
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(rc.s, 1), zenRockMat);
+      rock.position.set(rc.x, 0.7 + rc.s * 0.4, rc.z);
+      rock.rotation.set(Math.random(), Math.random(), Math.random());
+      rock.castShadow = true;
+      rock.receiveShadow = true;
+      toriiGroup.add(rock);
+    });
+
+    this.scene.add(toriiGroup);
+  }
+
+  /**
+   * ZONE 3: East Moon Pavilion & Pagoda Gardens (Logic Lamps)
+   * An elevated meditation pavilion set in tranquil pine and stone gardens
+   */
+  private createMoonPavilion() {
+    const pavilion = new THREE.Group();
+    pavilion.position.set(33, 1.5, 1);
+
+    const timberMat = new THREE.MeshStandardMaterial({
+      color: 0x2b1d14, // Dark charred cypress timber
+      roughness: 0.75,
+      flatShading: true,
+    });
+    const roofSlateMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b, // Slate roof tiles
+      roughness: 0.6,
+      flatShading: true,
+    });
+    const goldTrim = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      roughness: 0.35,
+      metalness: 0.7,
+    });
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x64748b,
+      roughness: 0.85,
+      flatShading: true,
+    });
+
+    // 1. Four Main Corner Pillars
+    const pillarHalf = 3.2;
+    [
+      [-pillarHalf, -pillarHalf],
+      [pillarHalf, -pillarHalf],
+      [-pillarHalf, pillarHalf],
+      [pillarHalf, pillarHalf],
+    ].forEach(([px, pz]) => {
+      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 3.4, 8), timberMat);
+      pillar.position.set(px, 1.7, pz);
+      pillar.castShadow = true;
+      pavilion.add(pillar);
+
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.25, 0.5), stoneMat);
+      base.position.set(px, 0.12, pz);
+      pavilion.add(base);
+    });
+
+    // 2. Cross Beams (Nageshi)
+    const beamGeoX = new THREE.BoxGeometry(pillarHalf * 2 + 0.8, 0.22, 0.28);
+    const beamGeoZ = new THREE.BoxGeometry(0.28, 0.22, pillarHalf * 2 + 0.8);
+    [-pillarHalf, pillarHalf].forEach((p) => {
+      const beamX = new THREE.Mesh(beamGeoX, timberMat);
+      beamX.position.set(0, 3.3, p);
+      const beamZ = new THREE.Mesh(beamGeoZ, timberMat);
+      beamZ.position.set(p, 3.3, 0);
+      pavilion.add(beamX, beamZ);
+    });
+
+    // 3. Pavilion Traditional Hip Roof (Pyramidal pagoda style)
+    const roofW = pillarHalf * 2 + 2.4;
+    const roofGeo = new THREE.ConeGeometry(roofW * 0.75, 1.8, 4);
+    const roof = new THREE.Mesh(roofGeo, roofSlateMat);
+    roof.position.y = 4.3;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    pavilion.add(roof);
+
+    // Roof Apex Gold Jewel Finial
+    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), goldTrim);
+    finial.position.y = 5.3;
+    pavilion.add(finial);
+
+    // 4. Emerald Hanging Lanterns under the 4 Eaves
+    [
+      [-pillarHalf, -pillarHalf],
+      [pillarHalf, -pillarHalf],
+      [-pillarHalf, pillarHalf],
+      [pillarHalf, pillarHalf],
+    ].forEach(([lx, lz]) => {
+      const lanternGeo = new THREE.CylinderGeometry(0.15, 0.18, 0.35, 6);
+      const emeraldGlowMat = new THREE.MeshBasicMaterial({
+        color: 0x34d399,
+        transparent: true,
+        opacity: 0.9,
+      });
+      const lanternMesh = new THREE.Mesh(lanternGeo, emeraldGlowMat);
+      lanternMesh.position.set(lx * 0.85, 2.7, lz * 0.85);
+      pavilion.add(lanternMesh);
+
+      const light = new THREE.PointLight(0x34d399, 1.2, 5);
+      light.position.copy(lanternMesh.position);
+      pavilion.add(light);
+    });
+
+    // 5. Traditional Stone Water Basin (Tsukubai)
+    const basin = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.45, 0.6, 12), stoneMat);
+    basin.position.set(-5.5, 0.3, 3.5);
+    basin.castShadow = true;
+    pavilion.add(basin);
+
+    // Water surface inside basin
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      roughness: 0.1,
+      metalness: 0.3,
+    });
+    const water = new THREE.Mesh(new THREE.CircleGeometry(0.42, 12), waterMat);
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(-5.5, 0.58, 3.5);
+    pavilion.add(water);
+
+    this.scene.add(pavilion);
+  }
+
+  /**
    * Blooming Sakura (Cherry Blossom) trees framing the scene
    */
   private createSakuraTrees() {
@@ -574,22 +1012,37 @@ export class Environment {
     // Positions matching the reference photo:
     // Pushed outward around the perimeter and elevated so crowns are well above player/camera sightlines
     const treePositions = [
-      // Left framing trees (pushed further back to perimeter and raised higher)
-      { x: -16, y: 0.8, z: -8, scale: 1.5, rotation: 0.3 },
-      { x: -15, y: 0.8, z: 2, scale: 1.35, rotation: 1.2 },
-      { x: -17, y: 0.4, z: 9, scale: 1.4, rotation: -0.5 },
-      // Valley canopy edge below terrace railing (creating sea of pink blossoms down in valley)
+      // Central Hub framing trees (cleared from pathways)
+      { x: -16.5, y: 0.8, z: -8, scale: 1.5, rotation: 0.3 },
+      { x: -16.5, y: 0.8, z: 8, scale: 1.4, rotation: -0.5 },
+      // Valley canopy edge below terrace railing
       { x: -9, y: -1.6, z: -17, scale: 1.5, rotation: 0.7 },
       { x: -2, y: -1.8, z: -19, scale: 1.4, rotation: 2.1 },
       { x: 5, y: -1.8, z: -20, scale: 1.6, rotation: -1.1 },
       { x: 13, y: -1.6, z: -18, scale: 1.3, rotation: 0.4 },
-      // Trees flanking the Pagoda on the right outer perimeter
-      { x: 23, y: 0.8, z: 1, scale: 1.25, rotation: 1.8 },
-      { x: 21, y: 0.6, z: -9, scale: 1.35, rotation: -0.9 },
-      { x: 19, y: 0.4, z: 12, scale: 1.2, rotation: 0.2 },
-      // Behind the courtyard perimeter
-      { x: -8, y: 0.4, z: 18, scale: 1.3, rotation: 0.5 },
-      { x: 3, y: 0.4, z: 18, scale: 1.2, rotation: -1.5 },
+      // Trees flanking the Pagoda
+      { x: 23, y: 0.8, z: -8, scale: 1.35, rotation: -0.9 },
+      { x: 21, y: 0.4, z: 12, scale: 1.2, rotation: 0.2 },
+      // Zone 1: West Overlook framing trees
+      { x: -43, y: 0.8, z: -10, scale: 1.45, rotation: 0.8 },
+      { x: -43, y: 0.8, z: 9, scale: 1.4, rotation: -0.4 },
+      { x: -33, y: 0.8, z: -11.5, scale: 1.35, rotation: 1.5 },
+      { x: -33, y: 0.8, z: 11.5, scale: 1.35, rotation: -1.2 },
+      { x: -25, y: 0.8, z: -7.5, scale: 1.3, rotation: 0.2 },
+      { x: -25, y: 0.8, z: 7.5, scale: 1.3, rotation: -0.7 },
+      // Zone 2: South Torii Sakura Grove trees (dense sacred blooming grove)
+      { x: -12, y: 0.8, z: 24, scale: 1.4, rotation: 0.6 },
+      { x: 12, y: 0.8, z: 24, scale: 1.4, rotation: -0.6 },
+      { x: -13, y: 0.8, z: 34, scale: 1.5, rotation: 1.1 },
+      { x: 13, y: 0.8, z: 34, scale: 1.5, rotation: -1.1 },
+      { x: 0, y: 0.8, z: 42.5, scale: 1.6, rotation: 0.2 },
+      { x: -7, y: 0.8, z: 41, scale: 1.35, rotation: -0.7 },
+      { x: 7, y: 0.8, z: 41, scale: 1.35, rotation: 0.7 },
+      // Zone 3: East Moon Pavilion & Pagoda Upper Gardens trees
+      { x: 44, y: 1.5, z: -6, scale: 1.35, rotation: 0.4 },
+      { x: 44, y: 1.5, z: 8, scale: 1.4, rotation: -0.8 },
+      { x: 33, y: 1.5, z: -10.5, scale: 1.3, rotation: 1.2 },
+      { x: 33, y: 1.5, z: 12.5, scale: 1.3, rotation: -1.4 },
     ];
 
     treePositions.forEach((conf) => {
@@ -718,6 +1171,10 @@ export class Environment {
   /**
    * Post-and-rail protective balustrades along the scenic overlook
    */
+  /**
+   * Post-and-rail protective balustrades along the scenic overlook
+   * Designed with open gateways leading into the 3 new zones
+   */
   private createWoodenRailings() {
     const railMat = new THREE.MeshStandardMaterial({
       color: 0x2b221d, // Dark weathered cedar timber
@@ -725,7 +1182,7 @@ export class Environment {
       flatShading: true,
     });
 
-    // North overlook fence (facing Mt. Fuji)
+    // 1. North overlook fence (facing Mt. Fuji)
     const northRailing = new THREE.Group();
     northRailing.position.set(-6, 0.7, -12.5);
 
@@ -736,7 +1193,6 @@ export class Environment {
     midBar.position.set(0, 0.5, 0);
     northRailing.add(topBar, midBar);
 
-    // Vertical posts
     for (let x = -length / 2; x <= length / 2; x += 1.4) {
       const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), railMat);
       post.position.set(x, 0.5, 0);
@@ -745,25 +1201,73 @@ export class Environment {
     }
     this.scene.add(northRailing);
 
-    // West overlook fence
-    const westRailing = new THREE.Group();
-    westRailing.position.set(-15.5, 0.7, 0);
-    westRailing.rotation.y = Math.PI / 2;
-
-    const wLength = 25;
-    const wTop = new THREE.Mesh(new THREE.BoxGeometry(wLength, 0.1, 0.14), railMat);
-    wTop.position.set(0, 0.95, 0);
-    const wMid = new THREE.Mesh(new THREE.BoxGeometry(wLength, 0.08, 0.1), railMat);
-    wMid.position.set(0, 0.5, 0);
-    westRailing.add(wTop, wMid);
-
-    for (let z = -wLength / 2; z <= wLength / 2; z += 1.4) {
+    // 2. West fences (with grand open archway leading to West Promenade at z: [-3.8, 3.8])
+    const westNorth = new THREE.Group();
+    westNorth.position.set(-15.5, 0.7, -8.15);
+    westNorth.rotation.y = Math.PI / 2;
+    const wnLen = 8.5;
+    westNorth.add(
+      new THREE.Mesh(new THREE.BoxGeometry(wnLen, 0.1, 0.14), railMat),
+      new THREE.Mesh(new THREE.BoxGeometry(wnLen, 0.08, 0.1), railMat)
+    );
+    (westNorth.children[0] as THREE.Mesh).position.set(0, 0.95, 0);
+    (westNorth.children[1] as THREE.Mesh).position.set(0, 0.5, 0);
+    for (let z = -wnLen / 2; z <= wnLen / 2; z += 1.4) {
       const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), railMat);
       post.position.set(z, 0.5, 0);
-      post.castShadow = true;
-      westRailing.add(post);
+      westNorth.add(post);
     }
-    this.scene.add(westRailing);
+    this.scene.add(westNorth);
+
+    const westSouth = new THREE.Group();
+    westSouth.position.set(-15.5, 0.7, 8.15);
+    westSouth.rotation.y = Math.PI / 2;
+    const wsLen = 8.5;
+    westSouth.add(
+      new THREE.Mesh(new THREE.BoxGeometry(wsLen, 0.1, 0.14), railMat),
+      new THREE.Mesh(new THREE.BoxGeometry(wsLen, 0.08, 0.1), railMat)
+    );
+    (westSouth.children[0] as THREE.Mesh).position.set(0, 0.95, 0);
+    (westSouth.children[1] as THREE.Mesh).position.set(0, 0.5, 0);
+    for (let z = -wsLen / 2; z <= wsLen / 2; z += 1.4) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), railMat);
+      post.position.set(z, 0.5, 0);
+      westSouth.add(post);
+    }
+    this.scene.add(westSouth);
+
+    // 3. South fences (with open archway leading to Torii Avenue at x: [-3.8, 3.8])
+    const southWest = new THREE.Group();
+    southWest.position.set(-9.65, 0.7, 12.5);
+    const swLen = 11.5;
+    southWest.add(
+      new THREE.Mesh(new THREE.BoxGeometry(swLen, 0.1, 0.14), railMat),
+      new THREE.Mesh(new THREE.BoxGeometry(swLen, 0.08, 0.1), railMat)
+    );
+    (southWest.children[0] as THREE.Mesh).position.set(0, 0.95, 0);
+    (southWest.children[1] as THREE.Mesh).position.set(0, 0.5, 0);
+    for (let x = -swLen / 2; x <= swLen / 2; x += 1.4) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), railMat);
+      post.position.set(x, 0.5, 0);
+      southWest.add(post);
+    }
+    this.scene.add(southWest);
+
+    const southEast = new THREE.Group();
+    southEast.position.set(6.8, 0.7, 12.5);
+    const seLen = 6.0;
+    southEast.add(
+      new THREE.Mesh(new THREE.BoxGeometry(seLen, 0.1, 0.14), railMat),
+      new THREE.Mesh(new THREE.BoxGeometry(seLen, 0.08, 0.1), railMat)
+    );
+    (southEast.children[0] as THREE.Mesh).position.set(0, 0.95, 0);
+    (southEast.children[1] as THREE.Mesh).position.set(0, 0.5, 0);
+    for (let x = -seLen / 2; x <= seLen / 2; x += 1.4) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.05, 0.14), railMat);
+      post.position.set(x, 0.5, 0);
+      southEast.add(post);
+    }
+    this.scene.add(southEast);
   }
 
   /**
@@ -775,10 +1279,10 @@ export class Environment {
     this.petalSpeeds = new Float32Array(this.petalCount * 3);
 
     for (let i = 0; i < this.petalCount; i++) {
-      // Scatter within play area and valley
-      this.petalPositions[i * 3] = (Math.random() - 0.5) * 50;
+      // Scatter within expanded play areas and surrounding valleys
+      this.petalPositions[i * 3] = (Math.random() - 0.5) * 110;
       this.petalPositions[i * 3 + 1] = Math.random() * 18;
-      this.petalPositions[i * 3 + 2] = (Math.random() - 0.5) * 45;
+      this.petalPositions[i * 3 + 2] = (Math.random() * 65) - 15;
 
       // Velocities: drift down and with the mountain breeze (towards +X, -Z)
       this.petalSpeeds[i * 3] = 0.5 + Math.random() * 0.8;      // Drift X
@@ -831,8 +1335,8 @@ export class Environment {
       // Reset when below ground
       if (this.petalPositions[idx + 1] < 0) {
         this.petalPositions[idx + 1] = 16 + Math.random() * 4;
-        this.petalPositions[idx] = (Math.random() - 0.5) * 50;
-        this.petalPositions[idx + 2] = (Math.random() - 0.5) * 45;
+        this.petalPositions[idx] = (Math.random() - 0.5) * 110;
+        this.petalPositions[idx + 2] = (Math.random() * 65) - 15;
       }
     }
     pos.needsUpdate = true;
