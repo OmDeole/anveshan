@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { X, Sparkles, MessageSquareCode } from 'lucide-react';
+import { X, Sparkles, MessageSquareCode, TrainTrack } from 'lucide-react';
 
 interface PromptifyProps {
   onClose: () => void;
+  onGoToTrainStation?: () => void;
 }
 
-export const Promptify: React.FC<PromptifyProps> = ({ onClose }) => {
+export const Promptify: React.FC<PromptifyProps> = ({ onClose, onGoToTrainStation }) => {
   // Allow closing with Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,15 +63,26 @@ export const Promptify: React.FC<PromptifyProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="mt-8 flex justify-end">
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 pt-6">
+          {onGoToTrainStation && (
+            <button
+              type="button"
+              onClick={onGoToTrainStation}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-800/90 hover:bg-stone-700/90 border border-purple-500/40 text-purple-300 hover:text-purple-200 font-medium text-xs tracking-wider uppercase transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <TrainTrack className="w-4 h-4 text-purple-400" />
+              <span>Back to Train Station</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium text-xs tracking-wider uppercase shadow-lg shadow-purple-950/50 transition-all active:scale-95 flex items-center gap-2"
+            className="w-full sm:w-auto ml-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium text-xs tracking-wider uppercase shadow-lg shadow-purple-950/50 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Return to Sanctuary</span>
+            <span>Explore Sanctuary</span>
           </button>
         </div>
       </div>

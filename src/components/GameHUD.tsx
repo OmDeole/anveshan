@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { RotateCcw, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { RotateCcw, Volume2, VolumeX, Maximize2, TrainTrack } from 'lucide-react';
 import { soundController } from '../game/SoundController';
 
 interface GameHUDProps {
   onResetCamera: () => void;
   isSprinting: boolean;
+  onGoToTrainStation?: () => void;
+  currentPhase?: 'mountain-station' | 'temple';
 }
 
-export const GameHUD: React.FC<GameHUDProps> = ({ onResetCamera }) => {
+export const GameHUD: React.FC<GameHUDProps> = ({
+  onResetCamera,
+  onGoToTrainStation,
+  currentPhase,
+}) => {
   const [isSoundActive, setIsSoundActive] = useState<boolean>(soundController.isSoundActive());
 
   useEffect(() => {
@@ -30,10 +36,32 @@ export const GameHUD: React.FC<GameHUDProps> = ({ onResetCamera }) => {
   };
 
   return (
-    <div className="absolute inset-0 pointer-events-none select-none flex flex-col justify-between p-4 sm:p-6 z-20">
+    <div className="absolute inset-0 pointer-events-none select-none flex flex-col justify-between p-3 sm:p-6 z-20">
       {/* Top Header View Controls */}
-      <div className="flex items-start justify-end w-full">
-        {/* Action buttons (Recenter Camera, Mute, Fullscreen) */}
+      <div className="flex items-start justify-between w-full">
+        {/* Left: Quick Travel to Train Station Option */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          {onGoToTrainStation && (
+            <button
+              id="go-to-station-hud-button"
+              type="button"
+              onClick={onGoToTrainStation}
+              title="Go to Train Station to board other trains (オム, アーリア, サンディープ)"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur-md bg-stone-900/80 hover:bg-stone-800/95 border border-amber-500/40 hover:border-amber-400 text-white text-xs font-medium tracking-wide transition-all shadow-xl shadow-black/50 active:scale-95 group"
+            >
+              <TrainTrack className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span className="font-serif font-bold text-amber-300">富士見高原駅</span>
+              <span className="hidden md:inline text-stone-200">
+                {currentPhase === 'temple' ? 'Return to Train Station' : 'Station Platforms'}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300 font-mono hidden sm:inline-block border border-amber-400/30">
+                {currentPhase === 'temple' ? 'Board Trains' : '3 Trains'}
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Right: Action buttons (Recenter Camera, Mute, Fullscreen) */}
         <div className="pointer-events-auto flex items-center gap-2">
           <button
             id="recenter-camera-button"

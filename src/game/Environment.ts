@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { SanctuaryEventData } from '../types';
+import { SanctuaryEventData, SanctuaryEventId } from '../types';
 
 export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
   {
     id: 'tech-treasure-hunt',
-    name: 'Tech Treasure Hunt',
-    kanji: '宝探し',
+    name: "The Killer's Trail",
+    kanji: '殺人鬼の足跡',
     tagline: 'Fuji Panoramic Overlook',
     position: { x: -32.0, y: 0.7, z: 0.0 },
     color: 0xf59e0b, // Amber gold
@@ -50,8 +50,11 @@ export class Environment {
     baseY: number;
   }[] = [];
 
-  constructor(scene: THREE.Scene) {
+  public activeEventIds: SanctuaryEventId[];
+
+  constructor(scene: THREE.Scene, activeEventIds: SanctuaryEventId[] = ['tech-treasure-hunt']) {
     this.scene = scene;
+    this.activeEventIds = activeEventIds;
     this.setupLighting();
     this.createSkyAndBackdrop();
     this.createMountFuji();
@@ -65,6 +68,7 @@ export class Environment {
     this.createWoodenRailings();
     this.createSakuraPetalSystem();
     this.createEventWaypoints();
+    this.createStationDepartureGate();
   }
 
   /**
@@ -1389,7 +1393,8 @@ export class Environment {
    * - Colored point light for atmospheric illumination
    */
   private createEventWaypoints() {
-    SANCTUARY_EVENTS.forEach((event) => {
+    const activeEvents = SANCTUARY_EVENTS.filter((e) => this.activeEventIds.includes(e.id));
+    activeEvents.forEach((event) => {
       const group = new THREE.Group();
       group.position.set(event.position.x, event.position.y, event.position.z);
 
@@ -1517,5 +1522,78 @@ export class Environment {
         baseY: event.position.y,
       });
     });
+  }
+
+  /**
+   * Station Departure Gate in the Temple Courtyard (North edge at x: -2.0, z: -10.0)
+   * Allows player to return to Fujimi Train Station to board other trains.
+   */
+  private createStationDepartureGate() {
+    const gateGroup = new THREE.Group();
+    gateGroup.position.set(-2.0, 0.7, -10.0);
+
+    const vermilionMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.8 });
+
+    // 1. Torii Gate Archway
+    [-1.8, 1.8].forEach((px) => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 4.2, 8), vermilionMat);
+      post.position.set(px, 2.1, 0);
+      post.castShadow = true;
+      gateGroup.add(post);
+    });
+
+    const lintel = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.35, 0.45), blackMat);
+    lintel.position.set(0, 4.1, 0);
+    gateGroup.add(lintel);
+
+    const subBeam = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.2, 0.3), vermilionMat);
+    subBeam.position.set(0, 3.4, 0);
+    gateGroup.add(subBeam);
+
+    // 2. Hanging Wooden Sign: "富士見高原駅行 / To Fujimi Train Station"
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 160;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 512, 160);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(6, 6, 500, 148);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 38px "Hiragino Sans", "Meiryo", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('◄ 富士見高原駅行', 256, 65);
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('To Train Station (Board Trains)', 256, 115);
+
+    const signTex = new THREE.CanvasTexture(canvas);
+    const signGeo = new THREE.BoxGeometry(2.2, 0.7, 0.08);
+    const signMat = new THREE.MeshBasicMaterial({ map: signTex });
+    const sign = new THREE.Mesh(signGeo, signMat);
+    sign.position.set(0, 2.7, 0);
+    gateGroup.add(sign);
+
+    // 3. Glowing Departure Platform Rune on Ground
+    const runeGeo = new THREE.RingGeometry(0.8, 1.6, 24);
+    const runeMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b,
+      transparent: true,
+      opacity: 0.35,
+      side: THREE.DoubleSide,
+    });
+    const rune = new THREE.Mesh(runeGeo, runeMat);
+    rune.rotation.x = -Math.PI / 2;
+    rune.position.y = 0.03;
+    gateGroup.add(rune);
+
+    // 4. Warm Amber Departure Light
+    const portalLight = new THREE.PointLight(0xf59e0b, 1.6, 6.0);
+    portalLight.position.set(0, 1.8, 0);
+    gateGroup.add(portalLight);
+
+    this.scene.add(gateGroup);
   }
 }

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
 import { Environment, SANCTUARY_EVENTS } from './Environment';
-import { InputState, SanctuaryEventId, WaypointIndicatorData } from '../types';
+import { MountainStationEnvironment, STATION_TRAINS } from './MountainStationEnvironment';
+import { InputState, SanctuaryEventId, WaypointIndicatorData, TrainData, TrainId, WorldEnvironmentType } from '../types';
 
 export class GameEngine {
   private container: HTMLElement;
@@ -10,17 +11,32 @@ export class GameEngine {
   private renderer: THREE.WebGLRenderer;
   private clock: THREE.Clock;
 
+  // Active World Environment
+  public currentEnvType: WorldEnvironmentType = 'mountain-station';
+  public mountainEnvironment: MountainStationEnvironment | null = null;
+  public templeEnvironment: Environment | null = null;
+
   // Game entities
   public samurai: SamuraiCharacter;
-  public environment: Environment;
 
-  // Event Waypoint Tracking & Direction Indicators
+  // Event Waypoint & Train Tracking
   public onEventTriggered: ((eventId: SanctuaryEventId) => void) | null = null;
   public onNearEventChanged: ((eventId: SanctuaryEventId | null) => void) | null = null;
+  public onNearTrainChanged: ((train: TrainData | null) => void) | null = null;
+  public onBoardTrain: ((trainId: TrainId) => void) | null = null;
+  public nearbyTrain: TrainData | null = null;
   public onWaypointsUpdate: ((waypoints: WaypointIndicatorData[]) => void) | null = null;
   public isEventModalOpen: boolean = false;
   public lastTriggeredEventId: SanctuaryEventId | null = null;
   public nearbyEventId: SanctuaryEventId | null = null;
+  public activeTempleEventIds: SanctuaryEventId[] = ['tech-treasure-hunt'];
+  public isNearReturnStationPortal: boolean = false;
+  public onNearStationPortalChanged: ((isNear: boolean) => void) | null = null;
+
+  public getActiveSanctuaryEvents() {
+    return SANCTUARY_EVENTS.filter((e) => this.activeTempleEventIds.includes(e.id));
+  }
+
 
   // 3D In-world Direction Guidance Ring (chevrons under character pointing to events)
   private directionRingGroup!: THREE.Group;
@@ -68,8 +84,9 @@ export class GameEngine {
   private animFrameId: number | null = null;
   private isRunning: boolean = false;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, initialEnv: WorldEnvironmentType = 'mountain-station') {
     this.container = container;
+    this.currentEnvType = initialEnv;
     this.clock = new THREE.Clock();
 
     // 1. Scene setup
@@ -92,20 +109,29 @@ export class GameEngine {
     this.renderer.toneMappingExposure = 1.05;
     container.appendChild(this.renderer.domElement);
 
-    // 4. World entities
-    this.environment = new Environment(this.scene);
+    // 4. World entities & spawn position
+    if (initialEnv === 'mountain-station') {
+      this.characterPos.set(0, 6.2, -28); // High mountain ridge spawn looking at path & Fuji
+      this.mountainEnvironment = new MountainStationEnvironment(this.scene);
+    } else {
+      this.characterPos.set(-2, 0.7, 4); // Temple sanctuary courtyard spawn
+      this.templeEnvironment = new Environment(this.scene, this.activeTempleEventIds);
+    }
+
     this.samurai = new SamuraiCharacter();
     this.samurai.group.position.copy(this.characterPos);
     this.scene.add(this.samurai.group);
 
     // 4b. Direction guidance ring around character
     this.setupDirectionGuidance();
+    if (initialEnv === 'mountain-station') {
+      this.directionRingGroup.visible = false;
+    }
 
-    // Initialize camera position behind character facing Mt Fuji
+    // Initialize camera position behind character
     const initOffset = this.calculateCameraOffset();
     this.currentCameraPos.copy(this.characterPos).add(initOffset);
     this.camera.position.copy(this.currentCameraPos);
-
 
     // 5. Event Listeners
     this.setupEventListeners();
@@ -113,6 +139,69 @@ export class GameEngine {
     // 6. Start Loop
     this.start();
   }
+
+  /**
+   * Seamlessly switch between Mountain Station and Temple environments
+   */
+  public switchEnvironment(
+    envType: WorldEnvironmentType,
+    spawnAtStation: boolean = false,
+    activeTempleEvents: SanctuaryEventId[] = ['tech-treasure-hunt']
+  ) {
+    this.currentEnvType = envType;
+
+    // Remove all previous environment meshes from scene
+    const childrenToRemove: THREE.Object3D[] = [];
+    this.scene.children.forEach((child) => {
+      if (child !== this.samurai.group && child !== this.directionRingGroup) {
+        childrenToRemove.push(child);
+      }
+    });
+    childrenToRemove.forEach((c) => this.scene.remove(c));
+
+    if (envType === 'temple') {
+      this.mountainEnvironment = null;
+      this.activeTempleEventIds = activeTempleEvents;
+      this.templeEnvironment = new Environment(this.scene, activeTempleEvents);
+      this.characterPos.set(-2, 0.7, 4); // Temple Sanctuary central courtyard
+      this.rebuildDirectionPointers();
+      this.directionRingGroup.visible = true;
+    } else {
+      this.templeEnvironment = null;
+      this.mountainEnvironment = new MountainStationEnvironment(this.scene);
+      if (spawnAtStation) {
+        this.characterPos.set(0, 0.85, 2.0); // Station platform concourse directly facing the 3 trains
+      } else {
+        this.characterPos.set(0, 6.2, -28); // Mountain ridge spawn
+      }
+      this.directionRingGroup.visible = false;
+    }
+
+    this.verticalVelocity = 0;
+    this.samurai.isGrounded = true;
+    this.samurai.setFacingAngle(0);
+    this.samurai.group.position.copy(this.characterPos);
+    this.cameraAngleY = 0;
+    this.cameraPitch = 0.38;
+    this.currentCameraPos.copy(this.characterPos).add(this.calculateCameraOffset());
+    this.camera.position.copy(this.currentCameraPos);
+    this.cameraLookTarget.set(this.characterPos.x, this.characterPos.y + 1.25, this.characterPos.z);
+    this.camera.lookAt(this.cameraLookTarget);
+
+    // Reset interaction & input state
+    this.nearbyTrain = null;
+    this.nearbyEventId = null;
+    this.isNearReturnStationPortal = false;
+    this.lastTriggeredEventId = null;
+    this.input.moveVector = { x: 0, y: 0 };
+    this.input.forward = false;
+    this.input.backward = false;
+    this.input.left = false;
+    this.input.right = false;
+    this.input.sprint = false;
+  }
+
+
 
   /**
    * Set inputs from React VirtualJoystick or Keyboard handlers
@@ -149,27 +238,17 @@ export class GameEngine {
   }
 
   /**
-   * Set up in-world 3D directional guidance ring around samurai
-   * Creates glowing color-coded chevrons pointing toward each Sanctuary Event
+   * Rebuild directional pointer chevrons exclusively for active events
    */
-  private setupDirectionGuidance() {
-    this.directionRingGroup = new THREE.Group();
+  public rebuildDirectionPointers() {
+    if (!this.directionRingGroup) return;
 
-    // 1. Subtle perimeter aura ring on the ground around the samurai
-    const ringGeo = new THREE.RingGeometry(1.2, 1.26, 48);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.16,
-      side: THREE.DoubleSide,
-      depthWrite: false,
+    // Remove old pointer groups from direction ring
+    this.waypointPointers.forEach((wp) => {
+      this.directionRingGroup.remove(wp.group);
     });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.02;
-    this.directionRingGroup.add(ring);
+    this.waypointPointers = [];
 
-    // 2. Chevron arrow geometry pointing outward
     const shape = new THREE.Shape();
     shape.moveTo(0, 0.42); // Tip pointing forward
     shape.lineTo(-0.16, -0.12);
@@ -180,7 +259,7 @@ export class GameEngine {
     const chevronGeo = new THREE.ShapeGeometry(shape);
     chevronGeo.rotateX(-Math.PI / 2); // Lay flat on XZ plane
 
-    SANCTUARY_EVENTS.forEach((ev) => {
+    this.getActiveSanctuaryEvents().forEach((ev) => {
       const pGroup = new THREE.Group();
 
       const mat = new THREE.MeshBasicMaterial({
@@ -209,7 +288,30 @@ export class GameEngine {
         color: ev.color,
       });
     });
+  }
 
+  /**
+   * Set up in-world 3D directional guidance ring around samurai
+   * Creates glowing color-coded chevrons pointing toward each active Sanctuary Event
+   */
+  private setupDirectionGuidance() {
+    this.directionRingGroup = new THREE.Group();
+
+    // 1. Subtle perimeter aura ring on the ground around the samurai
+    const ringGeo = new THREE.RingGeometry(1.2, 1.26, 48);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.16,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.02;
+    this.directionRingGroup.add(ring);
+
+    this.rebuildDirectionPointers();
     this.scene.add(this.directionRingGroup);
   }
 
@@ -438,49 +540,87 @@ export class GameEngine {
       this.characterPos.x += moveDirX * speed * delta;
       this.characterPos.z += moveDirZ * speed * delta;
 
-      // 3. Multi-Zone Sanctuary Boundary & Collision
-      // Check if candidate position is within any of the 4 interconnected spaces:
-      const isInSanctuary = (x: number, z: number) => {
-        // Zone 0: Central Sanctuary Courtyard (Hub)
-        if (x >= -15.5 && x <= 18.5 && z >= -12.0 && z <= 12.0) return true;
-        // Zone 1: West Bridge & Fuji Overlook (Tech Treasure Hunt: beacon at -32, 0)
-        if (x >= -40.5 && x <= -15.0 && z >= -8.5 && z <= 8.5) return true;
-        // Zone 2: South Torii Avenue & Sakura Grove (Promptify: beacon at 0, 30)
-        if (x >= -9.5 && x <= 9.5 && z >= 11.5 && z <= 40.5) return true;
-        // Zone 3: Pagoda Platform & East Moon Pavilion (Logic Lamps: beacon at 33, 1)
-        if (x >= 2.5 && x <= 41.5 && z >= -7.5 && z <= 9.5) return true;
-        return false;
-      };
+      // 3. Multi-Zone World Boundaries & Collision
+      if (this.currentEnvType === 'mountain-station') {
+        const isInMountainStation = (x: number, z: number) => {
+          // High mountain ridge spawn area
+          if (x >= -12.5 && x <= 12.5 && z >= -35.0 && z <= -22.5) return true;
+          // Winding trail connecting ridge to station valley
+          if (x >= -4.5 && x <= 4.5 && z >= -23.0 && z <= 0.5) return true;
+          // Station platform and surrounding railway walkway
+          if (x >= -17.5 && x <= 17.5 && z >= -0.5 && z <= 37.0) return true;
+          return false;
+        };
 
-      if (!isInSanctuary(this.characterPos.x, this.characterPos.z)) {
-        // Attempt slide on X
-        if (isInSanctuary(this.characterPos.x, prevZ)) {
-          this.characterPos.z = prevZ;
-        } else if (isInSanctuary(prevX, this.characterPos.z)) {
-          this.characterPos.x = prevX;
-        } else {
-          this.characterPos.x = prevX;
-          this.characterPos.z = prevZ;
+        if (!isInMountainStation(this.characterPos.x, this.characterPos.z)) {
+          if (isInMountainStation(this.characterPos.x, prevZ)) {
+            this.characterPos.z = prevZ;
+          } else if (isInMountainStation(prevX, this.characterPos.z)) {
+            this.characterPos.x = prevX;
+          } else {
+            this.characterPos.x = prevX;
+            this.characterPos.z = prevZ;
+          }
+        }
+      } else {
+        // Temple Sanctuary Multi-Zone Boundary
+        const isInSanctuary = (x: number, z: number) => {
+          // Zone 0: Central Sanctuary Courtyard (Hub)
+          if (x >= -15.5 && x <= 18.5 && z >= -12.0 && z <= 12.0) return true;
+          // Zone 1: West Bridge & Fuji Overlook (The Killer's Trail: beacon at -32, 0)
+          if (x >= -40.5 && x <= -15.0 && z >= -8.5 && z <= 8.5) return true;
+          // Zone 2: South Torii Avenue & Sakura Grove (Promptify: beacon at 0, 30)
+          if (x >= -9.5 && x <= 9.5 && z >= 11.5 && z <= 40.5) return true;
+          // Zone 3: Pagoda Platform & East Moon Pavilion (Logic Lamps: beacon at 33, 1)
+          if (x >= 2.5 && x <= 41.5 && z >= -7.5 && z <= 9.5) return true;
+          return false;
+        };
+
+        if (!isInSanctuary(this.characterPos.x, this.characterPos.z)) {
+          if (isInSanctuary(this.characterPos.x, prevZ)) {
+            this.characterPos.z = prevZ;
+          } else if (isInSanctuary(prevX, this.characterPos.z)) {
+            this.characterPos.x = prevX;
+          } else {
+            this.characterPos.x = prevX;
+            this.characterPos.z = prevZ;
+          }
         }
       }
     }
 
     // Safety outer world clamp
-    this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
-    this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
+    if (this.currentEnvType === 'mountain-station') {
+      this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -18.0, 18.0);
+      this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -35.0, 37.0);
+    } else {
+      this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
+      this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
+    }
 
-    // Calculate Ground Height dynamically based on zone elevations
-    let groundHeight = 0.7; // Base stone terrace height for Hub, Overlook, and Torii Grove
+    // Calculate Ground Height dynamically based on active environment
+    let groundHeight = 0.7;
 
-    // Check if on the Pagoda raised stone platform or East Moon Pavilion
-    if (this.characterPos.x >= 2.5 && this.characterPos.x <= 41.5 &&
-        this.characterPos.z >= -7.5 && this.characterPos.z <= 9.5) {
-      if (this.characterPos.x < 3.8) {
-        // On stone steps transition
-        const stepProgress = (this.characterPos.x - 2.5) / 1.3;
-        groundHeight = 0.7 + stepProgress * 0.8;
+    if (this.currentEnvType === 'mountain-station') {
+      if (this.characterPos.z <= -22.5) {
+        groundHeight = 6.1; // Ridge height
+      } else if (this.characterPos.z < 0.0) {
+        const t = -this.characterPos.z / 22.5; // Mountain trail slope
+        groundHeight = 0.85 + t * (6.1 - 0.85);
       } else {
-        groundHeight = 1.5; // Raised Pagoda and Moon Pavilion platform deck
+        groundHeight = 0.85; // Platform & station ground level
+      }
+    } else {
+      // Temple Sanctuary elevation
+      groundHeight = 0.7;
+      if (this.characterPos.x >= 2.5 && this.characterPos.x <= 41.5 &&
+          this.characterPos.z >= -7.5 && this.characterPos.z <= 9.5) {
+        if (this.characterPos.x < 3.8) {
+          const stepProgress = (this.characterPos.x - 2.5) / 1.3;
+          groundHeight = 0.7 + stepProgress * 0.8;
+        } else {
+          groundHeight = 1.5;
+        }
       }
     }
 
@@ -509,16 +649,13 @@ export class GameEngine {
     );
 
     // 6. Camera Tracking: Elevated Third-Person View with dynamic zoom and pitch
-    // Camera smoothly follows behind samurai with soft damping (lerp)
     const cameraOffset = this.calculateCameraOffset();
     const targetCamPos = new THREE.Vector3().copy(this.characterPos).add(cameraOffset);
 
-    // Smooth fluid lerp for cinematic camera motion
     const camLerpSpeed = 8.5 * delta;
     this.currentCameraPos.lerp(targetCamPos, Math.min(camLerpSpeed, 0.95));
     this.camera.position.copy(this.currentCameraPos);
 
-    // Camera looks at chest height of samurai
     const targetLookAt = new THREE.Vector3(
       this.characterPos.x,
       this.characterPos.y + 1.25,
@@ -527,51 +664,84 @@ export class GameEngine {
     this.cameraLookTarget.lerp(targetLookAt, Math.min(10.0 * delta, 0.95));
     this.camera.lookAt(this.cameraLookTarget);
 
-    // 7. Event Waypoint Proximity Detection
-    let foundNearby: SanctuaryEventId | null = null;
-    const triggerRadius = 2.2;
-    const exitRadius = 3.2;
+    // 7. Proximity Detection: Trains in Mountain Station vs Waypoints in Temple
+    if (this.currentEnvType === 'mountain-station') {
+      let foundTrain: TrainData | null = null;
+      const trainTriggerDist = 3.2;
 
-    for (const ev of SANCTUARY_EVENTS) {
-      const dx = this.characterPos.x - ev.position.x;
-      const dz = this.characterPos.z - ev.position.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
+      for (const tr of STATION_TRAINS) {
+        const dx = this.characterPos.x - tr.doorPosition.x;
+        const dz = this.characterPos.z - tr.doorPosition.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist < trainTriggerDist) {
+          foundTrain = tr;
+          break;
+        }
+      }
 
-      if (dist < triggerRadius) {
-        foundNearby = ev.id;
-        // Trigger if not already triggered for this event and modal is not currently open
-        if (this.lastTriggeredEventId !== ev.id && !this.isEventModalOpen) {
-          this.lastTriggeredEventId = ev.id;
-          if (this.onEventTriggered) {
-            this.onEventTriggered(ev.id);
+      if (foundTrain?.id !== this.nearbyTrain?.id) {
+        this.nearbyTrain = foundTrain;
+        if (this.onNearTrainChanged) {
+          this.onNearTrainChanged(foundTrain);
+        }
+      }
+    } else {
+      // Temple Sanctuary Proximity Detection
+      let foundNearby: SanctuaryEventId | null = null;
+      const triggerRadius = 2.2;
+      const exitRadius = 3.2;
+
+      const activeEvents = this.getActiveSanctuaryEvents();
+      for (const ev of activeEvents) {
+        const dx = this.characterPos.x - ev.position.x;
+        const dz = this.characterPos.z - ev.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < triggerRadius) {
+          foundNearby = ev.id;
+          if (this.lastTriggeredEventId !== ev.id && !this.isEventModalOpen) {
+            this.lastTriggeredEventId = ev.id;
+            if (this.onEventTriggered) {
+              this.onEventTriggered(ev.id);
+            }
+          }
+          break;
+        }
+      }
+
+      if (this.lastTriggeredEventId) {
+        const lastEv = activeEvents.find((e) => e.id === this.lastTriggeredEventId);
+        if (lastEv) {
+          const dx = this.characterPos.x - lastEv.position.x;
+          const dz = this.characterPos.z - lastEv.position.z;
+          const dist = Math.sqrt(dx * dx + dz * dz);
+          if (dist > exitRadius) {
+            this.lastTriggeredEventId = null;
           }
         }
-        break;
       }
-    }
 
-    // Reset lastTriggeredEventId when walking away from the beacon
-    if (this.lastTriggeredEventId) {
-      const lastEv = SANCTUARY_EVENTS.find((e) => e.id === this.lastTriggeredEventId);
-      if (lastEv) {
-        const dx = this.characterPos.x - lastEv.position.x;
-        const dz = this.characterPos.z - lastEv.position.z;
-        const dist = Math.sqrt(dx * dx + dz * dz);
-        if (dist > exitRadius) {
-          this.lastTriggeredEventId = null;
+      if (foundNearby !== this.nearbyEventId) {
+        this.nearbyEventId = foundNearby;
+        if (this.onNearEventChanged) {
+          this.onNearEventChanged(foundNearby);
+        }
+      }
+
+      // Check proximity to Return-to-Station Departure Gate (at x: -2.0, z: -10.0)
+      const portalDx = this.characterPos.x - -2.0;
+      const portalDz = this.characterPos.z - -10.0;
+      const isNearPortal = Math.hypot(portalDx, portalDz) < 3.2;
+      if (isNearPortal !== this.isNearReturnStationPortal) {
+        this.isNearReturnStationPortal = isNearPortal;
+        if (this.onNearStationPortalChanged) {
+          this.onNearStationPortalChanged(isNearPortal);
         }
       }
     }
 
-    if (foundNearby !== this.nearbyEventId) {
-      this.nearbyEventId = foundNearby;
-      if (this.onNearEventChanged) {
-        this.onNearEventChanged(foundNearby);
-      }
-    }
-
-    // 8. Update in-world 3D Direction Guidance Ring and Pointers
-    if (this.directionRingGroup) {
+    // 8. In-world 3D Direction Guidance Ring (in Temple)
+    if (this.directionRingGroup && this.currentEnvType === 'temple') {
       this.directionRingGroup.position.set(
         this.characterPos.x,
         groundHeight + 0.04,
@@ -587,21 +757,16 @@ export class GameEngine {
         const dx = ev.position.x - this.characterPos.x;
         const dz = ev.position.z - this.characterPos.z;
         const dist = Math.hypot(dx, dz);
-        const angle = Math.atan2(dx, dz); // Direction angle in XZ plane
+        const angle = Math.atan2(dx, dz);
 
-        // Position pointer along ring around character
         const ringRadius = 1.25;
         item.group.position.x = Math.sin(angle) * ringRadius;
         item.group.position.z = Math.cos(angle) * ringRadius;
-
-        // Orient pointer so its tip points directly towards the event
         item.group.rotation.y = angle;
 
-        // Gentle floating animation
         const hover = Math.sin(time * 3 + idx * 2) * 0.02;
         item.chevron.position.y = 0.03 + hover;
 
-        // Pulsing glow (pulses faster when close to event)
         const isClose = dist < 5.0;
         const pulseSpeed = isClose ? 6.0 : 2.8;
         const pulse = 0.65 + Math.sin(time * pulseSpeed + idx) * 0.25;
@@ -612,49 +777,79 @@ export class GameEngine {
 
     // 9. Update Screen-Relative Direction & Distance for HUD Compass
     if (this.onWaypointsUpdate) {
-      // Camera forward vector in XZ plane
       const camFwdX = this.cameraLookTarget.x - this.camera.position.x;
       const camFwdZ = this.cameraLookTarget.z - this.camera.position.z;
       const camYaw = Math.atan2(camFwdX, -camFwdZ);
 
-      const waypointsData: WaypointIndicatorData[] = SANCTUARY_EVENTS.map((event) => {
-        const dx = event.position.x - this.characterPos.x;
-        const dz = event.position.z - this.characterPos.z;
-        const distance = Math.hypot(dx, dz);
-        const eventAngle = Math.atan2(dx, -dz);
+      if (this.currentEnvType === 'mountain-station') {
+        const trainWaypoints: WaypointIndicatorData[] = STATION_TRAINS.map((tr) => {
+          const dx = tr.doorPosition.x - this.characterPos.x;
+          const dz = tr.doorPosition.z - this.characterPos.z;
+          const distance = Math.hypot(dx, dz);
+          const angle = Math.atan2(dx, -dz);
 
-        let diff = (eventAngle - camYaw) * (180 / Math.PI);
-        while (diff > 180) diff -= 360;
-        while (diff < -180) diff += 360;
+          let diff = (angle - camYaw) * (180 / Math.PI);
+          while (diff > 180) diff -= 360;
+          while (diff < -180) diff += 360;
 
-        return {
-          id: event.id,
-          name: event.name,
-          kanji: event.kanji,
-          tagline: event.tagline,
-          colorHex: event.colorHex,
-          distance: Math.round(distance),
-          relativeAngleDeg: Math.round(diff),
-          isNearby: distance <= 3.2,
-        };
-      });
+          return {
+            id: tr.id === 'om' ? 'tech-treasure-hunt' : (tr.id === 'arya' ? 'promptify' : 'logic-lamps'),
+            name: tr.destinationEnglish.replace('To ', ''),
+            kanji: tr.nameJapanese,
+            tagline: tr.destinationJapanese,
+            colorHex: tr.colorHex,
+            distance: Math.round(distance),
+            relativeAngleDeg: Math.round(diff),
+            isNearby: distance <= 3.2,
+          };
+        });
 
-      this.onWaypointsUpdate(waypointsData);
+        this.onWaypointsUpdate(trainWaypoints);
+      } else {
+        const waypointsData: WaypointIndicatorData[] = this.getActiveSanctuaryEvents().map((event) => {
+          const dx = event.position.x - this.characterPos.x;
+          const dz = event.position.z - this.characterPos.z;
+          const distance = Math.hypot(dx, dz);
+          const eventAngle = Math.atan2(dx, -dz);
+
+          let diff = (eventAngle - camYaw) * (180 / Math.PI);
+          while (diff > 180) diff -= 360;
+          while (diff < -180) diff += 360;
+
+          return {
+            id: event.id,
+            name: event.name,
+            kanji: event.kanji,
+            tagline: event.tagline,
+            colorHex: event.colorHex,
+            distance: Math.round(distance),
+            relativeAngleDeg: Math.round(diff),
+            isNearby: distance <= 3.2,
+          };
+        });
+
+        this.onWaypointsUpdate(waypointsData);
+      }
     }
   }
 
   private tick = () => {
-
     if (!this.isRunning) return;
 
     const delta = Math.min(this.clock.getDelta(), 0.1);
 
     this.updatePhysics(delta);
-    this.environment.update(delta);
-    this.renderer.render(this.scene, this.camera);
 
+    if (this.currentEnvType === 'mountain-station' && this.mountainEnvironment) {
+      this.mountainEnvironment.update(delta);
+    } else if (this.currentEnvType === 'temple' && this.templeEnvironment) {
+      this.templeEnvironment.update(delta);
+    }
+
+    this.renderer.render(this.scene, this.camera);
     this.animFrameId = requestAnimationFrame(this.tick);
   };
+
 
   public start() {
     if (this.isRunning) return;
