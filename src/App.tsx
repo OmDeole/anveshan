@@ -207,7 +207,11 @@ export default function App() {
 
       {/* 2. Train Boarding Cutscene (Overlaid on top when boarding Train) */}
       {currentPhase === 'boarding' && (
-        <TrainBoardingCinematic train={boardingTrain} onComplete={handleBoardingComplete} />
+        <TrainBoardingCinematic
+          train={boardingTrain}
+          videoSrc="/train_transition.mp4"
+          onComplete={handleBoardingComplete}
+        />
       )}
 
       {/* 3. Full 3D Game World & Canvas (Kept continuously mounted so WebGL engine never dies) */}
