@@ -238,6 +238,15 @@ export class GameEngine {
   }
 
   /**
+   * Ring the sacred Bonshō temple bells in the Temple Sanctuary
+   */
+  public ringTempleBells() {
+    if (this.templeEnvironment) {
+      this.templeEnvironment.ringBells();
+    }
+  }
+
+  /**
    * Rebuild directional pointer chevrons exclusively for active events
    */
   public rebuildDirectionPointers() {

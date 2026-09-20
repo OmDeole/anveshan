@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SanctuaryEventData, SanctuaryEventId } from '../types';
+import { bellSoundController } from './BellSoundController';
 
 export const SANCTUARY_EVENTS: SanctuaryEventData[] = [
   {
@@ -37,7 +38,7 @@ export class Environment {
   public petalParticles!: THREE.Points;
   private petalPositions!: Float32Array;
   private petalSpeeds!: Float32Array;
-  private petalCount = 450;
+  private petalCount = 120;
   private lanternLights: THREE.PointLight[] = [];
   private eventWaypointObjects: {
     group: THREE.Group;
@@ -49,6 +50,25 @@ export class Environment {
     groundRune: THREE.Mesh;
     baseY: number;
   }[] = [];
+
+  // Japanese Night Sky & Celestial Objects
+  public starParticles!: THREE.Points;
+  public moonMesh!: THREE.Mesh;
+  public moonGlow!: THREE.Mesh;
+
+  // Bioluminescent Night Fireflies (Hotaru)
+  private fireflyParticles!: THREE.Points;
+  private fireflyPositions!: Float32Array;
+  private fireflyBaseY!: Float32Array;
+  private fireflyCount = 75;
+
+  // Japanese Temple Bell (Bonshō - 梵鐘) & Belfry Pavilion (Shōrō)
+  public templeBellGroup!: THREE.Group;
+  public bonshoBellGroup!: THREE.Group;
+  public bonshoStriker!: THREE.Group;
+  public shockwaveRing!: THREE.Mesh;
+  public bellLight!: THREE.PointLight;
+  private bellRingTimer: number = -1;
 
   public activeEventIds: SanctuaryEventId[];
 
@@ -67,60 +87,67 @@ export class Environment {
     this.createStoneLanterns();
     this.createWoodenRailings();
     this.createSakuraPetalSystem();
+    this.createTempleBellPavilion();
+    this.createNightFireflies();
+    this.createPagodaUplighting();
+    this.createHangingChōchinLanterns();
     this.createEventWaypoints();
     this.createStationDepartureGate();
   }
 
   /**
-   * Lighting calibrated to sunset/dawn golden twilight matching reference photo
+   * Japanese Night Lighting:
+   * Optimized for smooth 60 FPS performance with deep atmospheric moonlight
    */
   private setupLighting() {
-    // Ambient light - soft lilac/rose tint
-    const ambientLight = new THREE.AmbientLight(0xf2d9e6, 1.2);
+    // Ambient light — bright enough to see the scene clearly, rich moonlit indigo-slate
+    // This prevents any pitch-black areas while keeping the night-time atmosphere
+    const ambientLight = new THREE.AmbientLight(0x4a5c82, 2.0);
     this.scene.add(ambientLight);
 
-    // Directional Sun/Sky Light - warm apricot dawn light from right
-    const dirLight = new THREE.DirectionalLight(0xffecd2, 2.2);
-    dirLight.position.set(45, 60, 30);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 180;
-    dirLight.shadow.camera.left = -40;
-    dirLight.shadow.camera.right = 40;
-    dirLight.shadow.camera.top = 40;
-    dirLight.shadow.camera.bottom = -40;
-    dirLight.shadow.bias = -0.0005;
-    this.scene.add(dirLight);
+    // Primary Moonlight — positioned in front of the scene so it illuminates faces
+    // and terraces. cool silver-blue directional light from above-right
+    const moonDirLight = new THREE.DirectionalLight(0xd4e2fc, 2.2);
+    moonDirLight.position.set(25, 75, 35);
+    moonDirLight.castShadow = true;
+    moonDirLight.shadow.mapSize.width = 1024;
+    moonDirLight.shadow.mapSize.height = 1024;
+    moonDirLight.shadow.camera.near = 0.5;
+    moonDirLight.shadow.camera.far = 240;
+    moonDirLight.shadow.camera.left = -60;
+    moonDirLight.shadow.camera.right = 60;
+    moonDirLight.shadow.camera.top = 60;
+    moonDirLight.shadow.camera.bottom = -60;
+    moonDirLight.shadow.bias = -0.0005;
+    this.scene.add(moonDirLight);
 
-    // Soft cool blue-violet fill light from opposite side
-    const fillLight = new THREE.DirectionalLight(0xa5b4fc, 0.8);
-    fillLight.position.set(-35, 30, -25);
+    // Soft fill light from the opposite valley — lifts shadows off the ground
+    const fillLight = new THREE.DirectionalLight(0x566d96, 1.0);
+    fillLight.position.set(-35, 45, -45);
     this.scene.add(fillLight);
 
-    // Atmospheric Fog matching twilight mist
-    this.scene.fog = new THREE.FogExp2(0xebd2de, 0.009);
+    // Softer fog density so you can see further into the night mist
+    this.scene.fog = new THREE.FogExp2(0x18243b, 0.0068);
   }
 
   /**
-   * Atmospheric sky dome with soft gradient and distant clouds
+   * Japanese Night Sky:
+   * Deep starry indigo celestial sphere with glowing silver Moon & lunar halo
    */
   private createSkyAndBackdrop() {
-    // Sky Dome with twilight gradient
     const skyGeo = new THREE.SphereGeometry(350, 32, 24);
     
-    // Shader or vertex colored sky
+    // Luminous midnight sky — clearly a night sky but with visible depth
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d')!;
     const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, '#585e82');   // Twilight purple blue above
-    grad.addColorStop(0.4, '#a288a6'); // Soft lavender
-    grad.addColorStop(0.65, '#e4a5b8');// Rose dawn pink
-    grad.addColorStop(0.85, '#f6c3a9');// Soft peach/apricot horizon
-    grad.addColorStop(1.0, '#ebd4d8'); // Mist base
+    grad.addColorStop(0, '#060e1f');   // Deep zenith midnight
+    grad.addColorStop(0.3, '#0e1e38'); // Rich celestial indigo
+    grad.addColorStop(0.6, '#162a4f'); // Moonlit navy blue
+    grad.addColorStop(0.82, '#1e3660');// Warmer horizon indigo
+    grad.addColorStop(1.0, '#18243b'); // Ground-meeting night mist
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
@@ -133,15 +160,101 @@ export class Environment {
     const skyMesh = new THREE.Mesh(skyGeo, skyMat);
     this.scene.add(skyMesh);
 
-    // Volumetric cloud layer in the valley
-    const cloudMat = new THREE.MeshBasicMaterial({
-      color: 0xedd6df,
+    // 1. Starfield across the celestial sphere
+    const starCount = 750;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = u * 2.0 * Math.PI;
+      const phi = Math.acos(2.0 * v - 1.0);
+      const r = 340;
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = Math.abs(r * Math.cos(phi)) + 15; // Upper celestial dome
+      const z = r * Math.sin(phi) * Math.sin(theta);
+      starPositions[i * 3] = x;
+      starPositions[i * 3 + 1] = y;
+      starPositions[i * 3 + 2] = z;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+    // Star point sprite texture
+    const starCanvas = document.createElement('canvas');
+    starCanvas.width = 64;
+    starCanvas.height = 64;
+    const sCtx = starCanvas.getContext('2d')!;
+    const sGrad = sCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    sGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    sGrad.addColorStop(0.35, 'rgba(224, 242, 254, 0.85)');
+    sGrad.addColorStop(0.8, 'rgba(147, 197, 253, 0.2)');
+    sGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    sCtx.fillStyle = sGrad;
+    sCtx.fillRect(0, 0, 64, 64);
+    const starTex = new THREE.CanvasTexture(starCanvas);
+
+    const starMat = new THREE.PointsMaterial({
+      size: 2.4,
+      map: starTex,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.92,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.starParticles = new THREE.Points(starGeo, starMat);
+    this.scene.add(this.starParticles);
+
+    // 2. Majestic Luminous Moon in the night sky
+    const moonGroup = new THREE.Group();
+    moonGroup.position.set(-45, 95, -75);
+
+    // Glowing Moon Sphere
+    const moonGeo = new THREE.SphereGeometry(6.5, 32, 32);
+    const moonMat = new THREE.MeshStandardMaterial({
+      color: 0xf8fafc,
+      emissive: 0xdbeafe,
+      emissiveIntensity: 0.92,
+      roughness: 0.3,
+    });
+    this.moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    moonGroup.add(this.moonMesh);
+
+    // Moon Glow Halo Billboard
+    const haloCanvas = document.createElement('canvas');
+    haloCanvas.width = 128;
+    haloCanvas.height = 128;
+    const hCtx = haloCanvas.getContext('2d')!;
+    const hGrad = hCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    hGrad.addColorStop(0, 'rgba(224, 242, 254, 0.85)');
+    hGrad.addColorStop(0.25, 'rgba(186, 230, 253, 0.45)');
+    hGrad.addColorStop(0.65, 'rgba(125, 211, 252, 0.12)');
+    hGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    hCtx.fillStyle = hGrad;
+    hCtx.fillRect(0, 0, 128, 128);
+    const haloTex = new THREE.CanvasTexture(haloCanvas);
+
+    const haloGeo = new THREE.PlaneGeometry(44, 44);
+    const haloMat = new THREE.MeshBasicMaterial({
+      map: haloTex,
+      transparent: true,
+      opacity: 0.78,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.moonGlow = new THREE.Mesh(haloGeo, haloMat);
+    moonGroup.add(this.moonGlow);
+
+    this.scene.add(moonGroup);
+
+    // Nocturnal cloud layer drifting in the valley with silver moonlit rims
+    const cloudMat = new THREE.MeshBasicMaterial({
+      color: 0x141d30,
+      transparent: true,
+      opacity: 0.5,
       depthWrite: false,
     });
     for (let i = 0; i < 24; i++) {
-      const cloudW = 25 + Math.random() * 35;
+      const cloudW = 28 + Math.random() * 35;
       const cloudH = 6 + Math.random() * 8;
       const cloudGeo = new THREE.BoxGeometry(cloudW, cloudH, 20);
       const cloud = new THREE.Mesh(cloudGeo, cloudMat);
@@ -277,8 +390,8 @@ export class Environment {
     baseTerrainGeo.computeVertexNormals();
 
     const grassMat = new THREE.MeshStandardMaterial({
-      color: 0x556b4f, // Verdant mountain moss grass
-      roughness: 0.85,
+      color: 0x2e4237, // Moonlit moss green — visible under lunar light
+      roughness: 0.9,
       flatShading: true,
     });
     const baseTerrain = new THREE.Mesh(baseTerrainGeo, grassMat);
@@ -287,25 +400,25 @@ export class Environment {
     baseTerrain.receiveShadow = true;
     this.scene.add(baseTerrain);
 
-    // Stone Materials
+    // Stone Materials - moonlit Japanese stone tones, visible but clearly night-time
     const terraceMat = new THREE.MeshStandardMaterial({
-      color: 0x94a3b8, // Light ashlar stone
-      roughness: 0.65,
+      color: 0x47556a, // Moonlit slate courtyard flagstone
+      roughness: 0.8,
       flatShading: true,
     });
     const pagodaBaseMat = new THREE.MeshStandardMaterial({
-      color: 0x64748b, // Dressed temple granite
-      roughness: 0.7,
+      color: 0x3a4558, // Dressed temple granite under moonlight
+      roughness: 0.82,
       flatShading: true,
     });
     const slabMat = new THREE.MeshStandardMaterial({
-      color: 0xcfd8dc,
-      roughness: 0.5,
+      color: 0x5c6b80, // Moonlit weathered slate pavers
+      roughness: 0.75,
       flatShading: true,
     });
     const darkWoodMat = new THREE.MeshStandardMaterial({
-      color: 0x3e2723, // Weathered Japanese cedar decking
-      roughness: 0.75,
+      color: 0x2d2420, // Deep weathered Japanese cedar decking
+      roughness: 0.85,
       flatShading: true,
     });
 
@@ -1001,14 +1114,16 @@ export class Environment {
       flatShading: true,
     });
 
-    // Blossom materials with soft pink gradient hues
+    // Blossom materials with soft pink gradient hues & subtle moonlit luminescence
     const blossomColors = [0xfbcfe8, 0xf472b6, 0xf9a8d4, 0xfce7f3, 0xfda4af];
     const blossomMats = blossomColors.map(
       (col) =>
         new THREE.MeshStandardMaterial({
           color: col,
-          roughness: 0.6,
+          roughness: 0.55,
           metalness: 0.05,
+          emissive: col,
+          emissiveIntensity: 0.18,
           flatShading: true,
         })
     );
@@ -1099,26 +1214,38 @@ export class Environment {
   }
 
   /**
-   * Stone Lanterns (Kasuga Tōrō) on the terrace with warm candlelight
+   * Stone Lanterns (Kasuga Tōrō) on the terrace and paths with warm glowing candlelight
    */
   private createStoneLanterns() {
     const lanternMat = new THREE.MeshStandardMaterial({
-      color: 0x78869b, // Weathered granite stone
-      roughness: 0.8,
+      color: 0x334155, // Weathered Japanese granite
+      roughness: 0.85,
       flatShading: true,
     });
 
-    const fireMat = new THREE.MeshBasicMaterial({
-      color: 0xfef08a, // Warm glowing fire box
+    // Glowing warm paper screen / candlelight chamber
+    const fireboxMat = new THREE.MeshStandardMaterial({
+      color: 0x292524,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 1.6,
+      roughness: 0.4,
     });
 
-    // Positions matching the stone lanterns in the photo
+    const flameMat = new THREE.MeshBasicMaterial({
+      color: 0xffedd5, // Warm bright flame core
+    });
+
+    // Positions lining courtyard, overlook, and path to Killer's Trail
     const lanternPositions = [
       { x: -1.2, z: -6.5 },
       { x: 3.8, z: -6.5 },
       { x: 3.8, z: -1.5 },
       { x: -8.5, z: -6.5 },
       { x: -8.5, z: 6.5 },
+      { x: -14.0, z: -5.0 },
+      { x: -20.0, z: 4.5 },
+      { x: -25.0, z: -4.0 },
+      { x: -29.0, z: 3.5 },
     ];
 
     lanternPositions.forEach((pos) => {
@@ -1141,9 +1268,14 @@ export class Environment {
       lantern.add(shelf);
 
       // Light chamber (Hibukuro) with warm glow
-      const firebox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.42), fireMat);
+      const firebox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.42), fireboxMat);
       firebox.position.y = 1.62;
       lantern.add(firebox);
+
+      // Bright flame core
+      const flame = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), flameMat);
+      flame.position.y = 1.62;
+      lantern.add(flame);
 
       // Umbrella roof cap (Kasa)
       const cap = new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.35, 6), lanternMat);
@@ -1154,12 +1286,6 @@ export class Environment {
       const finial = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), lanternMat);
       finial.position.y = 2.22;
       lantern.add(finial);
-
-      // Warm point light radiating into scene
-      const light = new THREE.PointLight(0xf59e0b, 1.4, 6);
-      light.position.y = 1.62;
-      lantern.add(light);
-      this.lanternLights.push(light);
 
       lantern.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
@@ -1322,21 +1448,383 @@ export class Environment {
   }
 
   /**
-   * Update animation loop (drifting petals, flickering lantern lights)
+   * Traditional Japanese Shōrō (Belfry Pavilion) and Great Bonshō Bronze Bell.
+   * Gracefully situated on the North-West courtyard terrace (x: -9.5, z: -8.0),
+   * nestling into the garden while leaving the forward mountain vista completely open.
+   */
+  private createTempleBellPavilion() {
+    const belfry = new THREE.Group();
+    belfry.position.set(-9.5, 0.7, -8.0);
+
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x1e2638, // Dressed dark slate foundation
+      roughness: 0.85,
+      flatShading: true,
+    });
+
+    const darkTimber = new THREE.MeshStandardMaterial({
+      color: 0x1c1917, // Weathered Japanese cedar
+      roughness: 0.8,
+    });
+
+    const vermilionMat = new THREE.MeshStandardMaterial({
+      color: 0x881337, // Deep lacquer vermilion
+      roughness: 0.5,
+    });
+
+    const roofSlate = new THREE.MeshStandardMaterial({
+      color: 0x0f172a, // Dark clay roof tiles
+      roughness: 0.85,
+    });
+
+    const bronzeMat = new THREE.MeshStandardMaterial({
+      color: 0x52525b, // Antique cast bronze
+      roughness: 0.35,
+      metalness: 0.82,
+      emissive: 0x27272a,
+      emissiveIntensity: 0.25,
+    });
+
+    const goldTrim = new THREE.MeshStandardMaterial({
+      color: 0xd97706, // Aged temple brass/gold leaf
+      roughness: 0.3,
+      metalness: 0.85,
+    });
+
+    // 1. Raised Stone Foundation Plinth (Stylobate)
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.25, 3.8), stoneMat);
+    plinth.position.y = 0.12;
+    plinth.receiveShadow = true;
+    belfry.add(plinth);
+
+    // Platform Wood Decking
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.12, 3.4), darkTimber);
+    deck.position.y = 0.28;
+    deck.receiveShadow = true;
+    belfry.add(deck);
+
+    // 2. Four Cedar Columns (Hashira)
+    const pillarPositions = [
+      [-1.35, -1.35],
+      [-1.35, 1.35],
+      [1.35, -1.35],
+      [1.35, 1.35],
+    ];
+
+    pillarPositions.forEach(([px, pz]) => {
+      // Column plinth
+      const soseki = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.18, 8), stoneMat);
+      soseki.position.set(px, 0.38, pz);
+      belfry.add(soseki);
+
+      // Cedar pillar
+      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 3.2, 8), vermilionMat);
+      col.position.set(px, 1.95, pz);
+      col.castShadow = true;
+      belfry.add(col);
+    });
+
+    // 3. Interlocking Tie-Beams (Nuki)
+    const beamGeoX = new THREE.BoxGeometry(3.2, 0.2, 0.2);
+    const beamGeoZ = new THREE.BoxGeometry(0.2, 0.2, 3.2);
+
+    const bX1 = new THREE.Mesh(beamGeoX, vermilionMat);
+    bX1.position.set(0, 3.45, -1.35);
+    const bX2 = new THREE.Mesh(beamGeoX, vermilionMat);
+    bX2.position.set(0, 3.45, 1.35);
+    const bZ1 = new THREE.Mesh(beamGeoZ, vermilionMat);
+    bZ1.position.set(-1.35, 3.45, 0);
+    const bZ2 = new THREE.Mesh(beamGeoZ, vermilionMat);
+    bZ2.position.set(1.35, 3.45, 0);
+
+    // Central crossbeam holding the bell
+    const centerBeam = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 3.2), darkTimber);
+    centerBeam.position.set(0, 3.55, 0);
+    belfry.add(bX1, bX2, bZ1, bZ2, centerBeam);
+
+    // 4. Traditional Curved Tiled Roof
+    const roofBase = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.2, 4.0), vermilionMat);
+    roofBase.position.y = 3.65;
+    belfry.add(roofBase);
+
+    const roofMain = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.0, 4.6, 1.1, 4, 1),
+      roofSlate
+    );
+    roofMain.position.y = 4.25;
+    roofMain.rotation.y = Math.PI / 4;
+    roofMain.castShadow = true;
+    belfry.add(roofMain);
+
+    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.22, 3.4), roofSlate);
+    ridge.position.y = 4.85;
+    belfry.add(ridge);
+
+    // 5. Great Japanese Bonshō Bronze Bell (梵鐘)
+    this.bonshoBellGroup = new THREE.Group();
+    this.bonshoBellGroup.position.set(0, 3.45, 0);
+
+    // Dragon-head suspension loop (Ryūzu)
+    const ryuzu = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.045, 8, 16), goldTrim);
+    ryuzu.position.y = -0.1;
+    this.bonshoBellGroup.add(ryuzu);
+
+    // Bell body mesh group
+    const bellMeshGroup = new THREE.Group();
+    bellMeshGroup.position.y = -0.9;
+
+    // Bronze Bell Barrel
+    const bellBodyGeo = new THREE.CylinderGeometry(0.38, 0.55, 1.25, 16, 3, true);
+    const bellBody = new THREE.Mesh(bellBodyGeo, bronzeMat);
+    bellBody.castShadow = true;
+    bellMeshGroup.add(bellBody);
+
+    // Crown Dome
+    const crownGeo = new THREE.SphereGeometry(0.38, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    const crown = new THREE.Mesh(crownGeo, bronzeMat);
+    crown.position.y = 0.62;
+    bellMeshGroup.add(crown);
+
+    // Flared bottom rim
+    const rimGeo = new THREE.TorusGeometry(0.55, 0.055, 8, 20);
+    const rim = new THREE.Mesh(rimGeo, bronzeMat);
+    rim.position.y = -0.62;
+    rim.rotation.x = Math.PI / 2;
+    bellMeshGroup.add(rim);
+
+    // Relief decorative bands
+    const bandGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.06, 16);
+    const band1 = new THREE.Mesh(bandGeo, goldTrim);
+    band1.position.y = 0.35;
+    const band2 = new THREE.Mesh(bandGeo, goldTrim);
+    band2.position.y = -0.28;
+    bellMeshGroup.add(band1, band2);
+
+    // Tsukiza striking target medallion facing +X direction
+    const tsukiza = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 12), goldTrim);
+    tsukiza.rotation.z = Math.PI / 2;
+    tsukiza.position.set(0.48, -0.15, 0);
+    bellMeshGroup.add(tsukiza);
+
+    this.bonshoBellGroup.add(bellMeshGroup);
+    belfry.add(this.bonshoBellGroup);
+
+    // 6. Suspended Wooden Striker (Shumoku - 撞木)
+    this.bonshoStriker = new THREE.Group();
+    this.bonshoStriker.position.set(1.05, 3.45, 0);
+
+    const ropeMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.9 });
+    const ropeGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.5, 4);
+    const rope1 = new THREE.Mesh(ropeGeo, ropeMat);
+    rope1.position.set(0, -0.75, -0.3);
+    const rope2 = new THREE.Mesh(ropeGeo, ropeMat);
+    rope2.position.set(0, -0.75, 0.3);
+    this.bonshoStriker.add(rope1, rope2);
+
+    const strikerLog = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07, 0.09, 1.3, 10),
+      darkTimber
+    );
+    strikerLog.position.set(0, -1.5, 0);
+    strikerLog.rotation.z = Math.PI / 2;
+    this.bonshoStriker.add(strikerLog);
+
+    belfry.add(this.bonshoStriker);
+
+    // 7. Celestial Resonant Shockwave Ring
+    const ringGeo = new THREE.RingGeometry(0.2, 0.6, 24);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xfbbf24,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    this.shockwaveRing = new THREE.Mesh(ringGeo, ringMat);
+    this.shockwaveRing.position.set(0.48, 1.9, 0);
+    this.shockwaveRing.rotation.y = Math.PI / 2;
+    this.shockwaveRing.scale.set(0.001, 0.001, 0.001);
+    belfry.add(this.shockwaveRing);
+
+    // 8. One gentle warm ambient light inside the Belfry
+    this.bellLight = new THREE.PointLight(0xf59e0b, 1.5, 6.5);
+    this.bellLight.position.set(0, 3.1, 0);
+    belfry.add(this.bellLight);
+
+    // Glowing corner paper lanterns (Emissive - NO heavy dynamic point lights)
+    const lanternMat = new THREE.MeshStandardMaterial({
+      color: 0x991b1b,
+      emissive: 0xf97316,
+      emissiveIntensity: 1.2,
+    });
+    const lGeo = new THREE.CylinderGeometry(0.14, 0.17, 0.35, 8);
+    [[-1.8, 1.8], [1.8, 1.8]].forEach(([lx, lz]) => {
+      const lMesh = new THREE.Mesh(lGeo, lanternMat);
+      lMesh.position.set(lx, 3.3, lz);
+      belfry.add(lMesh);
+    });
+
+    this.templeBellGroup = belfry;
+    this.scene.add(belfry);
+
+    // Collider for the relocated bell tower
+    this.colliders.push({
+      minX: -9.5 - 1.9,
+      maxX: -9.5 + 1.9,
+      minZ: -8.0 - 1.9,
+      maxZ: -8.0 + 1.9,
+      height: 3.8,
+    });
+  }
+
+  /**
+   * Bioluminescent Night Fireflies (Hotaru - 蛍)
+   * Lightweight 25-particle system with smooth group hover (0 GPU stalls)
+   */
+  private createNightFireflies() {
+    const count = 25;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 55;
+      positions[i * 3 + 1] = 1.2 + Math.random() * 2.8;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 45;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    // Soft golden glowing sprite texture
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d')!;
+    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+    grad.addColorStop(0.4, 'rgba(245, 158, 11, 0.5)');
+    grad.addColorStop(0.8, 'rgba(74, 222, 128, 0.15)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(canvas);
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.45,
+      map: tex,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    this.fireflyParticles = new THREE.Points(geo, mat);
+    this.scene.add(this.fireflyParticles);
+  }
+
+  /**
+   * Pagoda Night Illumination:
+   * 4 ornamental stone lanterns at the foundation base (0 dynamic GPU lights)
+   */
+  private createPagodaUplighting() {
+    const fixtureMat = new THREE.MeshStandardMaterial({
+      color: 0x1e2638,
+      roughness: 0.8,
+    });
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xfef08a,
+    });
+
+    const uplightPositions = [
+      { x: -5.0, z: -6.5 },
+      { x: 5.0, z: -6.5 },
+      { x: -5.0, z: 3.5 },
+      { x: 5.0, z: 3.5 },
+    ];
+
+    uplightPositions.forEach((pos) => {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.35, 8), fixtureMat);
+      base.position.set(pos.x, 0.88, pos.z);
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), glowMat);
+      cap.position.y = 0.22;
+      base.add(cap);
+      this.scene.add(base);
+    });
+  }
+
+  /**
+   * Traditional Japanese Hanging Paper Lanterns (Chōchin - 提灯)
+   * Uses glowing emissive materials for rich Japanese night atmosphere with 0 lag
+   */
+  private createHangingChōchinLanterns() {
+    const redLanternMat = new THREE.MeshStandardMaterial({
+      color: 0x991b1b,
+      emissive: 0xf97316,
+      emissiveIntensity: 1.15,
+      roughness: 0.45,
+    });
+
+    const lanternLocs = [
+      { x: -1.2, y: 3.2, z: 12.0 },
+      { x: 1.2, y: 3.2, z: 12.0 },
+      { x: -18.0, y: 3.4, z: -4.0 },
+      { x: -24.0, y: 3.4, z: 4.0 },
+      { x: -2.0, y: 3.2, z: -8.5 },
+    ];
+
+    lanternLocs.forEach((loc) => {
+      const group = new THREE.Group();
+      group.position.set(loc.x, loc.y, loc.z);
+
+      const string = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.015, 0.4, 4),
+        new THREE.MeshBasicMaterial({ color: 0x1c1917 })
+      );
+      string.position.y = 0.2;
+      group.add(string);
+
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.24, 0.45, 10),
+        redLanternMat
+      );
+      group.add(body);
+
+      const capMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.8 });
+      const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.05, 8), capMat);
+      topCap.position.y = 0.25;
+      const btmCap = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.05, 8), capMat);
+      btmCap.position.y = -0.25;
+      group.add(topCap, btmCap);
+
+      this.scene.add(group);
+    });
+  }
+
+  /**
+   * Ring the sacred Bonshō temple bells:
+   * Striker swings in and impacts, bell oscillates in damped harmonic swing,
+   * golden celestial shockwave expands, and resonant bell sound effect plays!
+   */
+  public ringBells() {
+    this.bellRingTimer = 0.0;
+    // Play rich resonant Japanese Bonsho sound effect
+    bellSoundController.playTempleBell(1.0);
+  }
+
+  /**
+   * Update animation loop (drifting petals, firefly hover, bell ringing)
+   * Streamlined for buttery-smooth 60 FPS
    */
   public update(delta: number) {
+    const time = performance.now() * 0.003;
+
     // 1. Drifting Petals animation
     const pos = this.petalParticles.geometry.attributes.position;
     for (let i = 0; i < this.petalCount; i++) {
       const idx = i * 3;
-      // Swaying sine wave wind effect
       const windX = Math.sin(this.petalPositions[idx + 1] * 0.5 + i) * 0.2;
 
       this.petalPositions[idx] += (this.petalSpeeds[idx] + windX) * delta;
       this.petalPositions[idx + 1] += this.petalSpeeds[idx + 1] * delta;
       this.petalPositions[idx + 2] += this.petalSpeeds[idx + 2] * delta;
 
-      // Reset when below ground
       if (this.petalPositions[idx + 1] < 0) {
         this.petalPositions[idx + 1] = 16 + Math.random() * 4;
         this.petalPositions[idx] = (Math.random() - 0.5) * 110;
@@ -1345,40 +1833,81 @@ export class Environment {
     }
     pos.needsUpdate = true;
 
-    // 2. Subtle organic lantern flicker
-    const time = performance.now() * 0.003;
-    this.lanternLights.forEach((light, idx) => {
-      light.intensity = 1.3 + Math.sin(time * 3 + idx * 1.7) * 0.2;
-    });
+    // 2. Smooth firefly group hover (no CPU buffer uploads)
+    if (this.fireflyParticles) {
+      this.fireflyParticles.position.y = Math.sin(time * 1.5) * 0.18;
+    }
 
-    // 3. Animate event waypoint beacons
+    // 3. Bonshō Temple Bell Ringing Physical Animation
+    if (this.bellRingTimer >= 0 && this.bonshoBellGroup && this.bonshoStriker) {
+      this.bellRingTimer += delta;
+      const t = this.bellRingTimer;
+
+      // Stage A: Striker swings toward bell and impacts at t = 0.22s
+      if (t < 0.22) {
+        const strikeProgress = t / 0.22;
+        this.bonshoStriker.rotation.z = Math.sin(strikeProgress * Math.PI) * 0.45;
+      } else {
+        // Stage B: Rebound of the striker
+        const reboundT = t - 0.22;
+        this.bonshoStriker.rotation.z = -Math.sin(reboundT * 7.5) * Math.exp(-reboundT * 2.5) * 0.22;
+      }
+
+      // Stage C: Bell pendulum oscillation after impact
+      if (t >= 0.22) {
+        const bellT = t - 0.22;
+        // Harmonic damped swing
+        const swing = Math.sin(bellT * 6.5) * Math.exp(-bellT * 0.5) * 0.28;
+        this.bonshoBellGroup.rotation.z = swing;
+
+        // Stage D: Expanding golden shockwave ring
+        if (this.shockwaveRing) {
+          const waveProgress = Math.min(bellT / 2.0, 1.0);
+          const waveScale = 0.1 + waveProgress * 12.0;
+          this.shockwaveRing.scale.set(waveScale, waveScale, waveScale);
+          const waveMat = this.shockwaveRing.material as THREE.MeshBasicMaterial;
+          waveMat.opacity = Math.max(0, 0.95 * (1.0 - waveProgress));
+        }
+
+        // Stage E: Pulsing bell illumination
+        if (this.bellLight) {
+          this.bellLight.intensity = 1.5 + Math.exp(-bellT * 3.0) * 2.5;
+        }
+      }
+
+      // Reset after 7s complete bell resonance
+      if (t > 7.0) {
+        this.bellRingTimer = -1;
+        this.bonshoBellGroup.rotation.z = 0;
+        this.bonshoStriker.rotation.z = 0;
+        if (this.shockwaveRing) {
+          this.shockwaveRing.scale.set(0.001, 0.001, 0.001);
+          (this.shockwaveRing.material as THREE.MeshBasicMaterial).opacity = 0;
+        }
+        if (this.bellLight) this.bellLight.intensity = 1.5;
+      }
+    }
+
+    // 4. Animate event waypoint beacons
     this.eventWaypointObjects.forEach((wp, idx) => {
       const t = time + idx * 2.1;
 
-      // Floating orb gentle hover bob
       wp.orb.position.y = 1.6 + Math.sin(t * 1.2) * 0.15;
-
-      // Scale pulse on inner orb
       const pulse = 1.0 + Math.sin(t * 2.5) * 0.12;
       wp.orb.scale.set(pulse, pulse, pulse);
 
-      // Rotate orbital rings
       wp.ring1.rotation.y += delta * 0.8;
       wp.ring1.rotation.x = Math.sin(t * 0.7) * 0.3;
       wp.ring2.rotation.y -= delta * 0.6;
       wp.ring2.rotation.z = Math.cos(t * 0.5) * 0.4;
 
-      // Pulsing beam intensity
       const beamMat = wp.beam.material as THREE.MeshBasicMaterial;
       beamMat.opacity = 0.35 + Math.sin(t * 1.8) * 0.12;
 
-
-      // Pulsing ground rune
       const runeMat = wp.groundRune.material as THREE.MeshBasicMaterial;
       runeMat.opacity = 0.2 + Math.sin(t * 1.4) * 0.1;
       wp.groundRune.rotation.y += delta * 0.3;
 
-      // Breathing light intensity
       wp.light.intensity = 1.8 + Math.sin(t * 2.0) * 0.6;
     });
   }

@@ -79,6 +79,13 @@ export default function App() {
     }
   };
 
+  const handleRegisterKillersTrail = () => {
+    // Ring the sacred Bonshō temple bells in the 3D sanctuary
+    if (engineRef.current) {
+      engineRef.current.ringTempleBells();
+    }
+  };
+
   const handleBoardingComplete = () => {
     setCurrentPhase('temple');
     setNearbyTrain(null);
@@ -337,7 +344,11 @@ export default function App() {
 
           {/* Active Sanctuary Event Modal Pages */}
           {activeEvent === 'tech-treasure-hunt' && (
-            <TechTreasureHunt onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
+            <TechTreasureHunt
+              onClose={handleCloseEvent}
+              onGoToTrainStation={handleGoToTrainStation}
+              onRegister={handleRegisterKillersTrail}
+            />
           )}
           {activeEvent === 'promptify' && (
             <Promptify onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
