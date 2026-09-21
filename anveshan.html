@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANVESHAN 3.0 | PCCOE Annual Techfest // Mount Fuji & Sakura Twilight</title>
+  <meta name="description" content="ANVESHAN 3.0 - PCCOE Annual Techfest (October 9-10, 2026). Where Ancient Heritage meets Modern Innovation beneath the sakura dawn. 3 Flagship Arenas.">
+  <meta name="theme-color" content="#1c1d3b">
+
+  <!-- Google Fonts: Cinzel (Editorial Display), Noto Serif JP (Calligraphic Japanese), Plus Jakarta Sans (Clean Modern Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Noto+Serif+JP:wght@400;500;600;700;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Sawarabi+Mincho&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================
+       MOUNT FUJI, CHUREITO PAGODA & SAKURA TWILIGHT DESIGN SYSTEM
+       Deep Twilight Blue -> Indigo Dawn -> Misty Violet-Plum
+       Editorial Display: Cinzel | Calligraphic: Noto Serif JP
+       ========================================================== */
+    :root {
+      /* Twilight Dawn Gradient Backgrounds */
+      --twilight-sky: #0b1124;
+      --indigo-dawn: #1c1d3b;
+      --misty-plum: #361e3d;
+      --deep-dusk: #131731;
+
+      /* Frosted Glassmorphism Surfaces */
+      --glass-surface: rgba(255, 255, 255, 0.04);
+      --glass-surface-elevated: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-border-hover: rgba(248, 165, 194, 0.45);
+      --glass-blur: blur(20px);
+
+      /* Traditional Pagoda Vermilion & Accents */
+      --vermilion: #e63946;
+      --vermilion-hover: #d90429;
+      --vermilion-glow: rgba(230, 57, 70, 0.4);
+      --vermilion-bloom: rgba(230, 57, 70, 0.22);
+
+      /* Soft Sakura Pink & Dawn Amber */
+      --sakura-pink: #fbc2eb;
+      --sakura-rose: #f8a5c2;
+      --sakura-glow: rgba(248, 165, 194, 0.35);
+      --dawn-gold: #ffd194;
+      --dawn-gold-glow: rgba(255, 209, 148, 0.35);
+      --rose-gold: #f3a683;
+      --ivory-gold: #fff4e6;
+
+      /* Typography Colors */
+      --text-white: #ffffff;
+      --text-soft: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+
+      /* Editorial & Serif Fonts */
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Cinzel', Georgia, serif;
+      --font-editorial: 'Cinzel', Georgia, serif;
+      --font-japanese: 'Noto Serif JP', 'Sawarabi Mincho', serif;
+
+      /* Layout */
+      --nav-height: 74px;
+      --container-max: 1240px;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-pill: 9999px;
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--nav-height) + 20px);
+      color-scheme: dark;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, var(--twilight-sky) 0%, var(--deep-dusk) 25%, var(--indigo-dawn) 55%, #2a1b38 80%, var(--misty-plum) 100%);
+      background-attachment: fixed;
+      color: var(--text-soft);
+      line-height: 1.65;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Subtle Dawn Lighting Overlays */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 50% 12%, rgba(248, 165, 194, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 15% 45%, rgba(255, 209, 148, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(248, 165, 194, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 50% 95%, rgba(230, 57, 70, 0.08) 0%, transparent 60%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--twilight-sky);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--sakura-rose);
+      border-radius: var(--radius-pill);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--vermilion);
+    }
+
+    /* Full-screen Falling Sakura Canvas */
+    #sakura-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--container-max);
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 24px;
+      padding-right: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Typography & Text Fills */
+    .font-display {
+      font-family: var(--font-display);
+    }
+    .font-japanese {
+      font-family: var(--font-japanese);
+    }
+
+    .text-sakura-gradient {
+      background: linear-gradient(135deg, #ffffff 20%, var(--sakura-pink) 65%, var(--sakura-rose) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #ffffff 15%, var(--dawn-gold) 70%, #f39c12 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .kanji-accent {
+      font-family: var(--font-japanese);
+      color: var(--rose-gold);
+    }
+
+    /* Section Header */
+    .section-header {
+      text-align: center;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--sakura-rose);
+      background: rgba(248, 165, 194, 0.1);
+      border: 1px solid rgba(248, 165, 194, 0.28);
+      padding: 6px 18px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4.2vw, 3.2rem);
+      font-weight: 800;
+      color: var(--text-white);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    /* Torii / Pagoda Eaves Divider */
+    .twilight-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 20px auto 0;
+      opacity: 0.8;
+    }
+    .twilight-divider::before,
+    .twilight-divider::after {
+      content: "";
+      height: 1px;
+      width: 70px;
+      background: linear-gradient(90deg, transparent, var(--sakura-rose));
+    }
+    .twilight-divider::after {
+      background: linear-gradient(90deg, var(--sakura-rose), transparent);
+    }
+    .twilight-divider-icon {
+      color: var(--vermilion);
+      font-size: 1.1rem;
+    }
+
+    /* ==========================================================
+       TOP RIGHT FLOATING OVERLAY: "REGISTER HERE" BUTTON
+       Persistent across the entire site
+       ========================================================== */
+    .fixed-register-overlay {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-register-fixed {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #e63946 0%, #b51726 100%);
+      color: #ffffff;
+      font-family: var(--font-editorial);
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1.5px solid rgba(255, 209, 148, 0.6);
+      border-radius: 14px 4px 14px 4px;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(230, 57, 70, 0.65), 0 0 25px rgba(255, 209, 148, 0.4);
+      transition: var(--transition);
+      animation: registerPulse 3s infinite ease-in-out;
+      user-select: none;
+    }
+
+    @keyframes registerPulse {
+      0%, 100% {
+        box-shadow: 0 6px 24px rgba(230, 57, 70, 0.65), 0 0 20px rgba(248, 165, 194, 0.3);
+        transform: translateY(0);
+      }
+      50% {
+        box-shadow: 0 10px 34px rgba(230, 57, 70, 0.9), 0 0 32px rgba(255, 209, 148, 0.55);
+        transform: translateY(-2px);
+      }
+    }
+
+    .btn-register-fixed:hover {
+      background: linear-gradient(135deg, #ff4757 0%, #c01323 100%);
+      border-color: #ffd194;
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 12px 40px rgba(230, 57, 70, 0.9), 0 0 35px rgba(255, 209, 148, 0.7);
+    }
+
+    .btn-register-fixed .pulse-beacon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffd194;
+      box-shadow: 0 0 10px #ffd194;
+    }
+
+    @media (max-width: 768px) {
+      .fixed-register-overlay {
+        top: 14px;
+        right: 58px;
+      }
+      .btn-register-fixed {
+        padding: 8px 16px;
+        font-size: 0.76rem;
+        gap: 6px;
+      }
+    }
+
+    /* ==========================================================
+       1. UNIFIED SLEEK TOP NAVIGATION BAR
+       ========================================================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--nav-height);
+      z-index: 1000;
+      background: rgba(11, 17, 36, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      transition: var(--transition);
+    }
+
+    .navbar.scrolled {
+      background: rgba(11, 17, 36, 0.96);
+      border-bottom-color: rgba(248, 165, 194, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .navbar-container {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-right: 170px; /* Leave breathing space for floating register button */
+    }
+
+    @media (max-width: 768px) {
+      .navbar-container {
+        padding-right: 130px;
+      }
+    }
+
+    /* Brand Logo: Torii Gate & Pagoda Silhouette + Red Hanko Seal */
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--text-white);
+    }
+
+    .brand-emblem {
+      width: 44px;
+      height: 44px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      transition: var(--transition);
+    }
+
+    .brand-crest-svg {
+      width: 44px;
+      height: 44px;
+      filter: drop-shadow(0 0 10px rgba(248, 165, 194, 0.3));
+      transition: var(--transition);
+    }
+
+    .brand-logo:hover .brand-crest-svg {
+      filter: drop-shadow(0 0 16px rgba(230, 57, 70, 0.55));
+      transform: scale(1.06);
+    }
+
+    .brand-text-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-family: var(--font-editorial);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      line-height: 1.1;
+      text-shadow: 0 0 14px rgba(255, 209, 148, 0.25);
+    }
+
+    .brand-sub {
+      font-family: var(--font-japanese);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--sakura-rose);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* Desktop Navigation Links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-soft);
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: var(--transition);
+      position: relative;
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--vermilion), var(--sakura-rose));
+      border-radius: var(--radius-pill);
+      transition: var(--transition);
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--text-white);
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .nav-link .kanji-micro {
+      font-family: var(--font-japanese);
+      font-size: 0.72rem;
+      color: var(--rose-gold);
+      opacity: 0.75;
+    }
+
+    .nav-link:hover .kanji-micro {
+      opacity: 1;
+      color: var(--sakura-pink);
+    }
+
+    /* Nav Actions */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Primary Action Button: Curved-Corner Pagoda Vermilion with Warm Bloom */
+    .btn-pagoda {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 28px;
+      background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+      color: #ffffff;
+      font-family: var(--font-editorial);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 14px 4px 14px 4px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px var(--vermilion-glow), 0 0 35px var(--vermilion-bloom);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+
+    .btn-pagoda::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: skewX(-20deg);
+      transition: 0.6s ease;
+    }
+
+    .btn-pagoda:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(230, 57, 70, 0.6), 0 0 45px rgba(230, 57, 70, 0.35);
+      background: linear-gradient(135deg, #f04754 0%, #a8001f 100%);
+      color: #ffffff;
+    }
+
+    .btn-pagoda:hover::before {
+      left: 140%;
+    }
+
+    .btn-pagoda-gold {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border: 1px solid rgba(255, 209, 148, 0.5);
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4);
+    }
+    .btn-pagoda-gold:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.6);
+    }
+
+    /* Mobile Hamburger Menu Toggle */
+    .mobile-nav-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 28px;
+      height: 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 1100;
+    }
+
+    .mobile-nav-toggle span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background-color: var(--text-white);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+
+    .mobile-nav-toggle.open span:nth-child(1) {
+      transform: translateY(9px) rotate(45deg);
+      background-color: var(--sakura-rose);
+    }
+    .mobile-nav-toggle.open span:nth-child(2) {
+      opacity: 0;
+    }
+    .mobile-nav-toggle.open span:nth-child(3) {
+      transform: translateY(-9px) rotate(-45deg);
+      background-color: var(--sakura-rose);
+    }
+
+    /* Mobile Drawer */
+    .mobile-drawer {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-nav-toggle {
+        display: flex;
+      }
+
+      .mobile-drawer {
+        display: flex;
+        position: fixed;
+        top: var(--nav-height);
+        left: 0;
+        width: 100%;
+        height: calc(100vh - var(--nav-height));
+        background: rgba(11, 17, 36, 0.98);
+        backdrop-filter: blur(24px);
+        border-top: 1px solid var(--glass-border);
+        padding: 32px 24px;
+        flex-direction: column;
+        gap: 18px;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 999;
+        overflow-y: auto;
+      }
+
+      .mobile-drawer.open {
+        transform: translateX(0);
+      }
+
+      .mobile-nav-link {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-white);
+        text-decoration: none;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .mobile-nav-link .kanji-micro {
+        color: var(--rose-gold);
+        font-family: var(--font-japanese);
+        font-size: 0.95rem;
+      }
+    }
+
+    /* ==========================================================
+       2. HERO SECTION: MOUNT FUJI & CHERRY BLOSSOM TWILIGHT
+       ========================================================== */
+    .hero-section {
+      position: relative;
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      padding-top: calc(var(--nav-height) + 40px);
+      padding-bottom: 80px;
+      overflow: hidden;
+    }
+
+    .hero-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Soft Sakura / Golden Dawn Sun Disc */
+    .hero-dawn-sun {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(320px, 46vw, 620px);
+      height: clamp(320px, 46vw, 620px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 209, 148, 0.65) 0%, rgba(248, 165, 194, 0.42) 42%, rgba(230, 57, 70, 0.2) 65%, transparent 80%);
+      box-shadow: 
+        0 0 140px rgba(248, 165, 194, 0.35),
+        0 0 70px rgba(255, 209, 148, 0.3);
+      opacity: 0.9;
+      animation: ambientDawnGlow 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes ambientDawnGlow {
+      0% { transform: translateX(-50%) scale(0.96); opacity: 0.82; }
+      100% { transform: translateX(-50%) scale(1.04); opacity: 0.98; }
+    }
+
+    /* Scenic Vector Art of Mount Fuji, Chureito Pagoda & Sakura Dawn */
+    .fuji-scenic-svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: clamp(340px, 56vh, 660px);
+      z-index: 2;
+    }
+
+    .hero-mist-base {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(180deg, transparent 0%, rgba(28, 29, 59, 0.75) 60%, var(--indigo-dawn) 100%);
+      z-index: 3;
+    }
+
+    /* Hero Center Content */
+    .hero-content {
+      position: relative;
+      z-index: 4;
+      text-align: center;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Hero Badge */
+    .hero-dawn-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(248, 165, 194, 0.35);
+      backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-editorial);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--text-white);
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(248, 165, 194, 0.18);
+    }
+
+    .hero-dawn-badge .dawn-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sakura-rose);
+      box-shadow: 0 0 10px var(--sakura-rose);
+      animation: beaconDawn 2s infinite;
+    }
+
+    @keyframes beaconDawn {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(248, 165, 194, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(248, 165, 194, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(248, 165, 194, 0); }
+    }
+
+    .hero-title-main {
+      font-family: var(--font-editorial);
+      font-size: clamp(3.2rem, 7.6vw, 6.2rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      line-height: 1.05;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6), 0 0 35px rgba(248, 165, 194, 0.25);
+    }
+
+    .hero-kanji-sub {
+      display: block;
+      font-family: var(--font-japanese);
+      font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      color: var(--dawn-gold);
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(255, 209, 148, 0.4);
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.08rem, 1.8vw, 1.3rem);
+      color: var(--text-soft);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    /* Hero Action Buttons */
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================
+       3. ABOUT SECTION & PILLARS
+       ========================================================== */
+    .about-section {
+      padding: 100px 0;
+      position: relative;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .about-story h3 {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    .about-story p {
+      color: var(--text-soft);
+      font-size: 1.05rem;
+      margin-bottom: 18px;
+      line-height: 1.7;
+    }
+
+    .about-pillars {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .pillar-card {
+      background: var(--glass-surface);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-left: 3px solid var(--vermilion);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      display: flex;
+      gap: 20px;
+      transition: var(--transition);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .pillar-card:hover {
+      transform: translateX(8px);
+      border-color: var(--glass-border-hover);
+      background: var(--glass-surface-elevated);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 20px rgba(248, 165, 194, 0.15);
+    }
+
+    .pillar-icon {
+      font-size: 1.7rem;
+      color: var(--vermilion);
+      flex-shrink: 0;
+    }
+
+    .pillar-info h4 {
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pillar-kanji {
+      font-family: var(--font-japanese);
+      font-size: 0.85rem;
+      color: var(--rose-gold);
+    }
+
+    .pillar-info p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================
+       4. FEATURED TRIAD EVENTS SHOWCASE (3 GRAND ARENAS)
+       ========================================================== */
+    .events-section {
+      padding: 100px 0;
+      position: relative;
+    }
+
+    .featured-events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .featured-event-card {
+      background: rgba(12, 16, 36, 0.76);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45), 0 0 20px rgba(248, 165, 194, 0.04);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .featured-event-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--sakura-rose), var(--vermilion), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .featured-event-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(248, 165, 194, 0.6);
+      border-bottom-color: var(--vermilion);
+      background: rgba(17, 22, 46, 0.9);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(248, 165, 194, 0.22), 0 0 15px rgba(230, 57, 70, 0.18);
+    }
+
+    .featured-event-card:hover::before {
+      opacity: 1;
+    }
+
+    .featured-event-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .featured-event-tag {
+      font-family: var(--font-editorial);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--sakura-rose);
+      background: rgba(248, 165, 194, 0.12);
+      border: 1px solid rgba(248, 165, 194, 0.3);
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
+    }
+
+    .featured-event-icon-box {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 20px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 209, 148, 0.1) 0%, rgba(230, 57, 70, 0.08) 60%, transparent 80%);
+      border: 1px solid rgba(248, 165, 194, 0.25);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .featured-event-card:hover .featured-event-icon-box {
+      border-color: var(--sakura-rose);
+      box-shadow: 0 0 25px rgba(248, 165, 194, 0.35);
+      transform: scale(1.06);
+    }
+
+    .featured-event-icon-box svg {
+      width: 74px;
+      height: 74px;
+      overflow: visible;
+    }
+
+    .featured-event-title {
+      font-family: var(--font-editorial);
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.22;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .featured-event-kanji-sub {
+      font-family: var(--font-japanese);
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      color: var(--dawn-gold);
+      text-align: center;
+      margin-bottom: 16px;
+      display: block;
+      text-shadow: 0 0 14px rgba(255, 209, 148, 0.3);
+    }
+
+    .featured-event-desc {
+      font-size: 0.93rem;
+      color: var(--text-soft);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .featured-event-specs {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .featured-event-specs span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .featured-event-specs strong {
+      color: var(--ivory-gold);
+    }
+
+    .featured-event-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .btn-form-direct {
+      width: 100%;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+      color: #ffffff;
+      font-family: var(--font-editorial);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 12px 4px 12px 4px;
+      box-shadow: 0 6px 20px var(--vermilion-glow);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .btn-form-direct:hover {
+      background: linear-gradient(135deg, #ff4d5a 0%, #a8001f 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(230, 57, 70, 0.7);
+      color: #ffffff;
+    }
+
+    .btn-view-details {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-soft);
+      padding: 10px 16px;
+      font-family: var(--font-editorial);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-view-details:hover {
+      background: rgba(248, 165, 194, 0.12);
+      border-color: var(--sakura-rose);
+      color: #ffffff;
+    }
+
+    @media (max-width: 1024px) {
+      .featured-events-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    /* ==========================================================
+       5. TIMELINE SCROLL (DAY 1 & DAY 2)
+       ========================================================== */
+    .schedule-section {
+      padding: 100px 0 120px;
+      position: relative;
+    }
+
+    .schedule-day-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .day-btn {
+      padding: 14px 32px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-soft);
+      cursor: pointer;
+      font-family: var(--font-display);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: var(--transition);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .day-btn .day-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .day-btn .day-date {
+      font-size: 0.76rem;
+      color: var(--sakura-pink);
+      margin-top: 2px;
+    }
+
+    .day-btn:hover {
+      border-color: rgba(248, 165, 194, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .day-btn.active {
+      background: linear-gradient(135deg, rgba(230, 57, 70, 0.35) 0%, rgba(217, 4, 41, 0.55) 100%);
+      border-color: var(--vermilion);
+      box-shadow: 0 4px 24px var(--vermilion-glow);
+    }
+
+    .timeline-wrap {
+      position: relative;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 20px 0;
+    }
+
+    .timeline-line {
+      position: absolute;
+      top: 0;
+      left: 32px;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--sakura-rose) 0%, var(--vermilion) 50%, var(--dawn-gold) 100%);
+      opacity: 0.4;
+    }
+
+    .timeline-item {
+      position: relative;
+      display: flex;
+      gap: 26px;
+      margin-bottom: 30px;
+      padding-left: 10px;
+    }
+
+    .timeline-node {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--twilight-sky);
+      border: 2px solid var(--sakura-rose);
+      box-shadow: 0 0 14px var(--sakura-glow);
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .timeline-box {
+      flex-grow: 1;
+      background: var(--glass-surface);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      transition: var(--transition);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .timeline-item:hover .timeline-box {
+      border-color: rgba(248, 165, 194, 0.45);
+      background: var(--glass-surface-elevated);
+      transform: translateX(6px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45), 0 0 20px rgba(248, 165, 194, 0.12);
+    }
+
+    .timeline-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-family: var(--font-display);
+    }
+
+    .timeline-time {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--sakura-rose);
+    }
+
+    .timeline-track {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--dawn-gold);
+      background: rgba(255, 209, 148, 0.12);
+      border: 1px solid rgba(255, 209, 148, 0.3);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .timeline-event-name {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .timeline-venue {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================
+       6. REGISTRATION OVERLAY HUB (ALL 3 GOOGLE FORMS)
+       ========================================================== */
+    .reg-hub-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(8, 12, 28, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: 20000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+      overflow-y: auto;
+    }
+
+    .reg-hub-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .reg-hub-window {
+      width: 100%;
+      max-width: 1040px;
+      background: #111528;
+      border: 1.5px solid rgba(248, 165, 194, 0.4);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(230, 57, 70, 0.25);
+      position: relative;
+      padding: 40px 36px;
+      overflow: hidden;
+    }
+
+    .reg-hub-close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      color: #ffffff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      transition: var(--transition);
+      z-index: 10;
+    }
+
+    .reg-hub-close-btn:hover {
+      background: rgba(230, 57, 70, 0.25);
+      color: var(--vermilion);
+      transform: rotate(90deg);
+    }
+
+    .reg-hub-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .reg-hub-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .reg-form-card {
+      background: rgba(21, 26, 50, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 28px 22px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: var(--transition);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .reg-form-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--sakura-rose);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(248, 165, 194, 0.2);
+    }
+
+    .reg-form-card-badge {
+      font-family: var(--font-editorial);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--dawn-gold);
+      background: rgba(255, 209, 148, 0.12);
+      border: 1px solid rgba(255, 209, 148, 0.3);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      align-self: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .reg-form-card-title {
+      font-family: var(--font-editorial);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .reg-form-card-kanji {
+      font-family: var(--font-japanese);
+      font-size: 0.8rem;
+      color: var(--rose-gold);
+      margin-bottom: 12px;
+    }
+
+    .reg-form-card-desc {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      line-height: 1.55;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    @media (max-width: 900px) {
+      .reg-hub-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .reg-hub-window {
+        padding: 32px 20px;
+      }
+    }
+
+    /* ==========================================================
+       7. FOOTER & HANKO SEAL
+       ========================================================== */
+    .footer-main {
+      background: #080d1a;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 60px 0 30px;
+      position: relative;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 48px;
+    }
+
+    .hanko-seal {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 86px;
+      height: 86px;
+      border: 3.5px solid var(--vermilion);
+      background: rgba(230, 57, 70, 0.08);
+      border-radius: 8px;
+      color: var(--vermilion);
+      transform: rotate(-4deg);
+      box-shadow: 0 0 18px var(--vermilion-glow);
+      margin-top: 16px;
+      transition: var(--transition);
+    }
+
+    .hanko-seal:hover {
+      transform: rotate(0deg) scale(1.06);
+    }
+
+    .hanko-kanji {
+      font-family: var(--font-japanese);
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .hanko-text {
+      font-family: var(--font-display);
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
+
+    .footer-col h5 {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      margin-bottom: 18px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 11px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--sakura-pink);
+      transform: translateX(4px);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-subtle);
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* ==========================================================
+       8. MODAL FOR EVENT DETAILS
+       ========================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 17, 36, 0.92);
+      backdrop-filter: blur(14px);
+      z-index: 21000;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-window {
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      background: #15192c;
+      border: 1px solid rgba(248, 165, 194, 0.35);
+      border-radius: var(--radius-md);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(248, 165, 194, 0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 22px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(20, 24, 42, 0.95);
+    }
+
+    .modal-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      color: var(--text-soft);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      transition: var(--transition);
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(230, 57, 70, 0.2);
+      color: var(--vermilion);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .about-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Falling Interactive Gentle Sakura Twilight Canvas -->
+  <canvas id="sakura-canvas" aria-hidden="true"></canvas>
+
+  <!-- ==========================================================
+       TOP RIGHT PERSISTENT OVERLAY: "REGISTER HERE" BUTTON
+       ========================================================== -->
+  <aside class="fixed-register-overlay" aria-label="Registration Action">
+    <button class="btn-register-fixed" id="fixedRegisterBtn" onclick="openRegistrationHub()" aria-haspopup="dialog">
+      <span class="pulse-beacon" aria-hidden="true"></span>
+      <span>Register Here</span>
+      <span aria-hidden="true">⛩️</span>
+    </button>
+  </aside>
+
+  <!-- ==========================================================
+       1. UNIFIED SLEEK TOP NAVIGATION BAR
+       ========================================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container navbar-container">
+      <!-- Torii Gate, Pagoda & Hanko Seal Emblem Logo -->
+      <a href="#hero" class="brand-logo" aria-label="ANVESHAN 3.0 Home">
+        <div class="brand-emblem">
+          <svg viewBox="0 0 120 120" class="brand-crest-svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="crestDawnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffd194" stop-opacity="0.95"/>
+                <stop offset="60%" stop-color="#f8a5c2" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#e63946" stop-opacity="0.95"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="54" fill="none" stroke="url(#crestDawnGrad)" stroke-width="2.5" stroke-dasharray="290 40" opacity="0.85"/>
+            <circle cx="60" cy="60" r="48" fill="rgba(255, 255, 255, 0.03)"/>
+            
+            <!-- Minimalist Torii Gate on Left -->
+            <g transform="translate(34, 42)" fill="#e63946">
+              <path d="M-18 -2 Q0 -6 18 -2 L16 1 Q0 -2 -16 1 Z"/>
+              <rect x="-14" y="3" width="28" height="2" rx="0.5"/>
+              <rect x="-9" y="0" width="2.5" height="24" rx="0.5"/>
+              <rect x="6.5" y="0" width="2.5" height="24" rx="0.5"/>
+            </g>
+            
+            <!-- Minimalist 5-Story Pagoda on Right -->
+            <g transform="translate(74, 30)" fill="#ffd194">
+              <line x1="0" y1="-12" x2="0" y2="0" stroke="#ffd194" stroke-width="1.5"/>
+              <circle cx="0" cy="-12" r="1.5" fill="#ffd194"/>
+              <path d="M-10 0 Q0 -3 10 0 L8 2 Q0 -1 -8 2 Z"/>
+              <rect x="-5" y="2" width="10" height="4" fill="#f8a5c2"/>
+              <path d="M-13 6 Q0 3 13 6 L11 8 Q0 5 -11 8 Z"/>
+              <rect x="-6" y="8" width="12" height="5" fill="#f8a5c2"/>
+              <path d="M-16 13 Q0 10 16 13 L14 15 Q0 12 -14 15 Z"/>
+              <rect x="-7.5" y="15" width="15" height="5.5" fill="#f8a5c2"/>
+              <path d="M-19 20.5 Q0 17.5 19 20.5 L17 23 Q0 20 -17 23 Z"/>
+              <rect x="-9" y="23" width="18" height="6" fill="#f8a5c2"/>
+              <path d="M-22 29 Q0 26 22 29 L20 32 Q0 29 -20 32 Z"/>
+              <rect x="-11" y="32" width="22" height="7" fill="#f8a5c2"/>
+            </g>
+            
+            <!-- Red Hanko Seal Stamp (印) -->
+            <g transform="translate(54, 78)">
+              <rect x="-11" y="-11" width="22" height="22" rx="3" fill="#e63946" stroke="#ffd194" stroke-width="1"/>
+              <text x="0" y="5" font-family="'Noto Serif JP', serif" font-size="12" font-weight="900" fill="#ffffff" text-anchor="middle">印</text>
+            </g>
+          </svg>
+        </div>
+        <div class="brand-text-wrap">
+          <span class="brand-name">ANVESHAN 3.0</span>
+          <span class="brand-sub">CHUREITO // 探求</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="#about" class="nav-link"><span class="kanji-micro">概</span> About</a></li>
+          <li><a href="#events" class="nav-link"><span class="kanji-micro">武</span> Events</a></li>
+          <li><a href="#schedule" class="nav-link"><span class="kanji-micro">時</span> Schedule</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Actions: Mobile Toggle -->
+      <div class="nav-actions">
+        <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#about" class="mobile-nav-link">
+        <span>About The Fest</span>
+        <span class="kanji-micro">概要</span>
+      </a>
+      <a href="#events" class="mobile-nav-link">
+        <span>Showcase Events</span>
+        <span class="kanji-micro">競技一覧</span>
+      </a>
+      <a href="#schedule" class="mobile-nav-link">
+        <span>Scroll Timeline</span>
+        <span class="kanji-micro">日程表</span>
+      </a>
+      <button class="btn-pagoda" onclick="openRegistrationHub()" style="margin-top: 16px; justify-content: center; width: 100%;">
+        <span>Register Here</span>
+        <span>⛩️</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================
+         2. HERO SECTION: MOUNT FUJI, CHUREITO PAGODA & SAKURA TWILIGHT
+         ========================================================== -->
+    <section class="hero-section" id="hero">
+      <div class="hero-backdrop" aria-hidden="true">
+        <!-- Soft Sakura & Golden Dawn Sun Disc -->
+        <div class="hero-dawn-sun"></div>
+
+        <!-- Scenic Vector Panorama: Mount Fuji, Chureito Pagoda & Sakura Boughs -->
+        <svg class="fuji-scenic-svg" viewBox="0 0 1440 520" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="scenicSkyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#0b1124" stop-opacity="0"/>
+              <stop offset="55%" stop-color="#24193b" stop-opacity="0.45"/>
+              <stop offset="82%" stop-color="#54264b" stop-opacity="0.65"/>
+              <stop offset="100%" stop-color="#ffd194" stop-opacity="0.45"/>
+            </linearGradient>
+
+            <linearGradient id="fujiBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#3d224d" stop-opacity="0.98"/>
+              <stop offset="45%" stop-color="#261b3e" stop-opacity="0.99"/>
+              <stop offset="100%" stop-color="#14172e" stop-opacity="1"/>
+            </linearGradient>
+
+            <linearGradient id="fujiSnowDawnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>
+              <stop offset="38%" stop-color="#fff0f5" stop-opacity="0.95"/>
+              <stop offset="72%" stop-color="#f8a5c2" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#e63946" stop-opacity="0"/>
+            </linearGradient>
+
+            <linearGradient id="snowShadowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ded0fa" stop-opacity="0.85"/>
+              <stop offset="100%" stop-color="#f8a5c2" stop-opacity="0.3"/>
+            </linearGradient>
+
+            <linearGradient id="foothillGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#2d1c3e" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#161932" stop-opacity="0.95"/>
+            </linearGradient>
+            <linearGradient id="foothillGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#221b3d" stop-opacity="0.88"/>
+              <stop offset="100%" stop-color="#121528" stop-opacity="1"/>
+            </linearGradient>
+
+            <filter id="lanternGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5.5" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- Distant Dawn Atmosphere -->
+          <rect x="0" y="100" width="1440" height="420" fill="url(#scenicSkyGrad)"/>
+
+          <!-- Distant Dawn Ridge Ranges Behind Fuji -->
+          <path d="M0,320 Q280,265 580,305 T1140,290 Q1300,315 1440,305 L1440,520 L0,520 Z" fill="url(#foothillGrad1)"/>
+
+          <!-- MAJESTIC MOUNT FUJI SYMMETRICAL VOLCANIC CONE -->
+          <path d="M 720,80 C 695,150 580,290 360,450 L 1080,450 C 860,290 745,150 720,80 Z" fill="url(#fujiBodyGrad)"/>
+          <path d="M 720,80 C 704,125 660,195 628,225 Q 662,210 688,235 Q 720,205 752,235 Q 778,210 812,225 C 780,195 736,125 720,80 Z" fill="url(#fujiSnowDawnGrad)"/>
+          <path d="M 720,80 L 712,185 Q 716,205 720,205 Q 724,205 728,185 Z" fill="url(#snowShadowGrad)" opacity="0.6"/>
+          <path d="M 720,80 L 684,165 Q 692,185 688,235 Q 682,180 710,120 Z" fill="url(#snowShadowGrad)" opacity="0.45"/>
+          <path d="M 720,80 L 756,165 Q 748,185 752,235 Q 758,180 730,120 Z" fill="url(#snowShadowGrad)" opacity="0.45"/>
+
+          <!-- Foothills in Front of Fuji Base -->
+          <path d="M0,380 Q360,340 720,375 T1440,360 L1440,520 L0,520 Z" fill="url(#foothillGrad2)"/>
+
+          <!-- Traditional Torii Gate in Left Mountain Foothill -->
+          <g transform="translate(260, 310) scale(0.7)" fill="#e63946" opacity="0.9">
+            <path d="M-45 -2 Q0 -10 45 -2 L41 4 Q0 -4 -41 4 Z"/>
+            <rect x="-36" y="6" width="72" height="4" rx="1"/>
+            <rect x="-24" y="0" width="6" height="56" rx="1"/>
+            <rect x="18" y="0" width="6" height="56" rx="1"/>
+            <rect x="-4" y="12" width="8" height="12" fill="#ffd194"/>
+          </g>
+
+          <!-- CHUREITO-STYLE 5-STORY PAGODA (Right Side Framing) -->
+          <g transform="translate(1220, 115) scale(0.88)">
+            <line x1="0" y1="-32" x2="0" y2="0" stroke="#ffd194" stroke-width="3"/>
+            <circle cx="0" cy="-32" r="3" fill="#ffd194"/>
+            <circle cx="0" cy="-24" r="2.5" fill="#ffd194"/>
+            <circle cx="0" cy="-16" r="2.5" fill="#ffd194"/>
+
+            <!-- TIER 5 -->
+            <path d="M-28 0 Q0 -7 28 0 L24 4 Q0 -3 -24 4 Z" fill="#e63946"/>
+            <path d="M-28 0 Q-32 -2 -34 -6" stroke="#ffd194" stroke-width="2" fill="none"/>
+            <path d="M28 0 Q32 -2 34 -6" stroke="#ffd194" stroke-width="2" fill="none"/>
+            <rect x="-14" y="4" width="28" height="14" fill="#1e1430"/>
+            <line x1="-14" y1="11" x2="14" y2="11" stroke="#e63946" stroke-width="2"/>
+            <circle cx="-24" cy="7" r="4.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+            <circle cx="24" cy="7" r="4.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+
+            <!-- TIER 4 -->
+            <path d="M-36 18 Q0 10 36 18 L32 23 Q0 15 -32 23 Z" fill="#e63946"/>
+            <path d="M-36 18 Q-41 16 -43 11" stroke="#ffd194" stroke-width="2" fill="none"/>
+            <path d="M36 18 Q41 16 43 11" stroke="#ffd194" stroke-width="2" fill="none"/>
+            <rect x="-18" y="23" width="36" height="16" fill="#1e1430"/>
+            <line x1="-18" y1="31" x2="18" y2="31" stroke="#e63946" stroke-width="2"/>
+            <circle cx="-32" cy="26" r="5" fill="#ffd194" filter="url(#lanternGlow)"/>
+            <circle cx="32" cy="26" r="5" fill="#ffd194" filter="url(#lanternGlow)"/>
+
+            <!-- TIER 3 -->
+            <path d="M-46 39 Q0 30 46 39 L42 44 Q0 35 -42 44 Z" fill="#e63946"/>
+            <path d="M-46 39 Q-52 37 -55 31" stroke="#ffd194" stroke-width="2.2" fill="none"/>
+            <path d="M46 39 Q52 37 55 31" stroke="#ffd194" stroke-width="2.2" fill="none"/>
+            <rect x="-23" y="44" width="46" height="18" fill="#1e1430"/>
+            <line x1="-23" y1="53" x2="23" y2="53" stroke="#e63946" stroke-width="2.2"/>
+            <circle cx="-42" cy="48" r="5.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+            <circle cx="42" cy="48" r="5.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+
+            <!-- TIER 2 -->
+            <path d="M-56 62 Q0 52 56 62 L51 68 Q0 58 -51 68 Z" fill="#e63946"/>
+            <path d="M-56 62 Q-63 60 -67 53" stroke="#ffd194" stroke-width="2.4" fill="none"/>
+            <path d="M56 62 Q63 60 67 53" stroke="#ffd194" stroke-width="2.4" fill="none"/>
+            <rect x="-28" y="68" width="56" height="22" fill="#1e1430"/>
+            <line x1="-28" y1="79" x2="28" y2="79" stroke="#e63946" stroke-width="2.4"/>
+            <circle cx="-52" cy="72" r="6" fill="#ffd194" filter="url(#lanternGlow)"/>
+            <circle cx="52" cy="72" r="6" fill="#ffd194" filter="url(#lanternGlow)"/>
+
+            <!-- TIER 1 -->
+            <path d="M-68 90 Q0 78 68 90 L62 97 Q0 85 -62 97 Z" fill="#e63946"/>
+            <path d="M-68 90 Q-76 88 -81 80" stroke="#ffd194" stroke-width="2.6" fill="none"/>
+            <path d="M68 90 Q76 88 81 80" stroke="#ffd194" stroke-width="2.6" fill="none"/>
+            <rect x="-34" y="97" width="68" height="28" fill="#1e1430"/>
+            <line x1="-34" y1="110" x2="34" y2="110" stroke="#e63946" stroke-width="2.6"/>
+            <polygon points="-40,125 40,125 46,160 -46,160" fill="#161126"/>
+            <circle cx="-62" cy="102" r="6.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+            <circle cx="62" cy="102" r="6.5" fill="#ffd194" filter="url(#lanternGlow)"/>
+          </g>
+
+          <!-- Top Left Sakura Bough -->
+          <g transform="translate(0, 0)" opacity="0.88">
+            <path d="M-20,-10 C80,40 180,30 260,110 C210,90 140,85 80,120 Z" fill="#1c162e"/>
+            <path d="M120,60 C180,90 220,130 290,140" stroke="#1c162e" stroke-width="5" fill="none"/>
+            <path d="M180,85 C240,110 270,170 330,190" stroke="#1c162e" stroke-width="3.5" fill="none"/>
+            <circle cx="260" cy="110" r="14" fill="#f8a5c2" opacity="0.9"/>
+            <circle cx="254" cy="105" r="10" fill="#fbc2eb" opacity="0.95"/>
+            <circle cx="266" cy="115" r="9" fill="#ffffff" opacity="0.9"/>
+            <circle cx="260" cy="110" r="3" fill="#e63946"/>
+            <circle cx="290" cy="140" r="15" fill="#f8a5c2" opacity="0.85"/>
+            <circle cx="282" cy="135" r="11" fill="#fbc2eb" opacity="0.95"/>
+            <circle cx="298" cy="144" r="10" fill="#ffffff" opacity="0.9"/>
+            <circle cx="290" cy="140" r="3" fill="#e63946"/>
+            <circle cx="330" cy="190" r="13" fill="#f8a5c2" opacity="0.85"/>
+            <circle cx="324" cy="186" r="9" fill="#fbc2eb" opacity="0.95"/>
+            <circle cx="336" cy="194" r="8" fill="#ffffff" opacity="0.9"/>
+            <circle cx="330" cy="190" r="2.5" fill="#e63946"/>
+          </g>
+
+          <!-- Top Right Sakura Bough -->
+          <g transform="translate(1440, 0) scale(-1, 1)" opacity="0.88">
+            <path d="M-20,-10 C80,35 160,25 240,95 C190,75 130,70 70,105 Z" fill="#1c162e"/>
+            <path d="M110,50 C170,80 200,115 270,125" stroke="#1c162e" stroke-width="4.5" fill="none"/>
+            <circle cx="240" cy="95" r="13" fill="#f8a5c2" opacity="0.9"/>
+            <circle cx="234" cy="91" r="9" fill="#fbc2eb" opacity="0.95"/>
+            <circle cx="246" cy="99" r="8" fill="#ffffff" opacity="0.9"/>
+            <circle cx="240" cy="95" r="2.5" fill="#e63946"/>
+            <circle cx="270" cy="125" r="14" fill="#f8a5c2" opacity="0.85"/>
+            <circle cx="264" cy="121" r="10" fill="#fbc2eb" opacity="0.95"/>
+            <circle cx="276" cy="129" r="9" fill="#ffffff" opacity="0.9"/>
+            <circle cx="270" cy="125" r="3" fill="#e63946"/>
+          </g>
+        </svg>
+
+        <div class="hero-mist-base"></div>
+      </div>
+
+      <div class="container hero-content">
+        <!-- Fest Dates Badge -->
+        <div class="hero-dawn-badge">
+          <span class="dawn-dot"></span>
+          <span>OCTOBER 9 - 10, 2026 // PCCOE ANNUAL TECHFEST</span>
+        </div>
+
+        <h1 class="hero-title-main text-sakura-gradient">ANVESHAN 3.0</h1>
+        <span class="hero-kanji-sub">技術の頂点 // SUMMIT OF INNOVATION</span>
+
+        <p class="hero-tagline">
+          Where timeless Japanese craftsmanship meets the frontier of modern technology. Ascend to new heights.
+        </p>
+
+        <!-- Hero Action Button -->
+        <div class="hero-actions">
+          <a href="#events" class="btn-pagoda">
+            <span>Explore Events</span>
+            <span aria-hidden="true">➔</span>
+          </a>
+          <button onclick="openRegistrationHub()" class="btn-pagoda btn-pagoda-gold">
+            <span>Register Here</span>
+            <span aria-hidden="true">⛩️</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         3. ABOUT THE FEST SECTION
+         ========================================================== -->
+    <section class="about-section" id="about">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-badge">
+            <span class="kanji-accent">概要</span> Festival Lore
+          </div>
+          <h2 class="section-title">Where Tradition Meets Innovation</h2>
+          <p class="section-subtitle">
+            Named after the timeless quest for wisdom and elevated by the serenity of Chureito beneath Mount Fuji.
+          </p>
+          <div class="twilight-divider">
+            <span class="twilight-divider-icon">🌸</span>
+          </div>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-story">
+            <h3>Crafting Technology with Ancient Mastery</h3>
+            <p>
+              In classical Japan, master artisans devoted lifetimes to the pursuit of absolute perfection—a philosophy known as <em>Shokunin Kishitsu</em>. At ANVESHAN 3.0, we channel that timeless devotion into the vanguard of modern computing, artificial intelligence, and mechanical engineering.
+            </p>
+            <p>
+              On <strong>October 9 – 10, 2026</strong>, thousands of creators, coders, and scholars gather from across the nation to share breakthroughs, forge solutions, and honor the sacred intersection of art and intellect.
+            </p>
+            <div style="margin-top: 28px;">
+              <a href="#events" class="btn-pagoda">
+                <span>View Event Tracks</span>
+                <span>⛩️</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="about-pillars">
+            <div class="pillar-card">
+              <div class="pillar-icon">⛩️</div>
+              <div class="pillar-info">
+                <h4>Sacred Heritage <span class="pillar-kanji">伝統の継承</span></h4>
+                <p>Drawing aesthetic harmony from pagoda architecture and traditional Japanese design principles.</p>
+              </div>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-icon">⚔️</div>
+              <div class="pillar-info">
+                <h4>Code Bushido <span class="pillar-kanji">武士道精神</span></h4>
+                <p>A culture of transparent, honorable, and merit-based competition where technical virtue stands supreme.</p>
+              </div>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-icon">🌸</div>
+              <div class="pillar-info">
+                <h4>Artisanal Ingenuity <span class="pillar-kanji">職人技術</span></h4>
+                <p>Celebrating thoughtful design, algorithmic elegance, and human-centered technological solutions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         4. EVENTS SHOWCASE (3 GRAND ARENAS)
+         ========================================================== -->
+    <section class="events-section" id="events">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-badge">
+            <span class="kanji-accent">競技</span> Grand Arenas
+          </div>
+          <h2 class="section-title">Featured Competitions</h2>
+          <p class="section-subtitle">
+            Three premier arenas forged at the summit of ancient heritage and frontier technology. Select your discipline to register.
+          </p>
+          <div class="twilight-divider">
+            <span class="twilight-divider-icon">⛩️</span>
+          </div>
+        </div>
+
+        <div class="featured-events-grid">
+          <!-- CARD 1: The Killer's Trail -->
+          <div class="featured-event-card">
+            <div class="featured-event-top">
+              <span class="featured-event-tag">MYSTERY & DEDUCTION</span>
+            </div>
+            <div class="featured-event-icon-box" title="The Crimson Blade Crest">
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Samurai Katana and Forensics Crest">
+                <defs>
+                  <radialGradient id="kabutoGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ff3366" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#e63946" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="bladeGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="60%" stop-color="#e2e8f0"/>
+                    <stop offset="100%" stop-color="#f8a5c2"/>
+                  </linearGradient>
+                  <linearGradient id="bloodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ff3366"/>
+                    <stop offset="100%" stop-color="#990011"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="38" fill="url(#kabutoGlow)"/>
+                <path d="M 28 58 C 22 68 18 78 30 82 C 40 76 46 72 50 72 C 54 72 60 76 70 82 C 82 78 78 68 72 58 Z" fill="#1b1c38" stroke="#f8a5c2" stroke-width="1.4" opacity="0.95"/>
+                <path d="M 32 66 C 38 72 44 74 50 74 C 56 74 62 72 68 66" stroke="#e63946" stroke-width="1.2" fill="none"/>
+                <path d="M 32 46 C 32 26 68 26 68 46 C 68 54 32 54 32 46 Z" fill="#252448" stroke="#ffd194" stroke-width="1.5"/>
+                <path d="M 50 36 C 42 16 26 12 20 14 C 30 24 38 28 48 38 Z" fill="#ffd194" stroke="#d4a373" stroke-width="0.8"/>
+                <path d="M 50 36 C 58 16 74 12 80 14 C 70 24 62 28 52 38 Z" fill="#ffd194" stroke="#d4a373" stroke-width="0.8"/>
+                <circle cx="50" cy="36" r="3.5" fill="#e63946" stroke="#ffd194" stroke-width="1"/>
+                <path d="M 37 46 Q 50 51 63 46 L 61 57 Q 50 63 39 57 Z" fill="#121324" stroke="#e63946" stroke-width="1.2"/>
+                <ellipse cx="44" cy="51" rx="3" ry="1.4" fill="#ffd194"/>
+                <ellipse cx="56" cy="51" rx="3" ry="1.4" fill="#ffd194"/>
+                <g transform="rotate(38 68 18)">
+                  <rect x="66" y="8" width="6" height="18" rx="2" fill="#2a111a" stroke="#ffd194" stroke-width="1"/>
+                  <line x1="66" y1="12" x2="72" y2="15" stroke="#e63946" stroke-width="1"/>
+                  <line x1="66" y1="16" x2="72" y2="19" stroke="#e63946" stroke-width="1"/>
+                  <line x1="66" y1="20" x2="72" y2="23" stroke="#e63946" stroke-width="1"/>
+                  <ellipse cx="69" cy="27" rx="7" ry="3" fill="#ffd194" stroke="#d4a373" stroke-width="0.8"/>
+                </g>
+                <path d="M 68 28 L 22 79 C 20 81 18 82 16 83 C 19 80 21 76 24 72 L 70 27 Z" fill="url(#bladeGrad)" stroke="#ffffff" stroke-width="0.8"/>
+                <path d="M 66 29 Q 46 52 20 78" stroke="#f8a5c2" stroke-width="1" fill="none" opacity="0.9"/>
+                <path d="M 17 84 C 15 86 14 88.5 14 90.5 C 14 93.5 16.5 96 19.5 96 C 22.5 96 25 93.5 25 90.5 C 25 88.5 22 86 17 84 Z" fill="url(#bloodGrad)"/>
+                <circle cx="17.5" cy="89.5" r="1.2" fill="#ffffff" opacity="0.85"/>
+                <circle cx="21" cy="92" r="0.8" fill="#ffb7c5" opacity="0.7"/>
+              </svg>
+            </div>
+            <h3 class="featured-event-title">The Killer's Trail</h3>
+            <span class="featured-event-kanji-sub">殺人鬼の足跡 // THE CRIMSON BLADE</span>
+            <p class="featured-event-desc">
+              Investigative problem-solving, crime scene decoding, and logic deduction challenge. Step into an intricate forensic labyrinth where digital ciphers and veiled testimonies conceal the culprit.
+            </p>
+            <div class="featured-event-specs">
+              <span>👥 Squad: <strong>2–4 Detectives</strong></span>
+              <span>📅 Date: <strong>Oct 9, 2026</strong></span>
+              <span>🏆 Bounty: <strong>₹25,000</strong></span>
+            </div>
+            <div class="featured-event-card-actions">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+                <span>Fill Google Form</span>
+                <span>➔</span>
+              </a>
+              <button class="btn-view-details" onclick="openFeaturedEventModal('killers-trail')">
+                View Arena Details
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 2: Logic Lamp -->
+          <div class="featured-event-card">
+            <div class="featured-event-top">
+              <span class="featured-event-tag">ALGORITHMIC LOGIC</span>
+            </div>
+            <div class="featured-event-icon-box" title="The Chōchin Logic Crest">
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Japanese Paper Lantern with Logic Kanji">
+                <defs>
+                  <radialGradient id="lanternRadial" cx="50%" cy="48%" r="48%">
+                    <stop offset="0%" stop-color="#fff8e7"/>
+                    <stop offset="35%" stop-color="#ffd194"/>
+                    <stop offset="75%" stop-color="#ff9f43"/>
+                    <stop offset="100%" stop-color="#e63946"/>
+                  </radialGradient>
+                  <radialGradient id="lanternHalo" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffd194" stop-opacity="0.45"/>
+                    <stop offset="60%" stop-color="#ff9f43" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#e63946" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="50" cy="52" r="42" fill="url(#lanternHalo)"/>
+                <line x1="50" y1="3" x2="50" y2="16" stroke="#ffd194" stroke-width="2"/>
+                <circle cx="50" cy="5" r="3" fill="none" stroke="#ffd194" stroke-width="1.5"/>
+                <path d="M 37 16 L 63 16 L 60 22 L 40 22 Z" fill="#181528" stroke="#ffd194" stroke-width="1.2"/>
+                <ellipse cx="50" cy="51" rx="27" ry="29" fill="url(#lanternRadial)"/>
+                <ellipse cx="50" cy="31" rx="17" ry="3.5" fill="none" stroke="#c0392b" stroke-width="1.1" opacity="0.75"/>
+                <ellipse cx="50" cy="41" rx="24" ry="4.5" fill="none" stroke="#c0392b" stroke-width="1.1" opacity="0.75"/>
+                <ellipse cx="50" cy="51" rx="26.5" ry="5" fill="none" stroke="#c0392b" stroke-width="1.1" opacity="0.75"/>
+                <ellipse cx="50" cy="61" rx="24" ry="4.5" fill="none" stroke="#c0392b" stroke-width="1.1" opacity="0.75"/>
+                <ellipse cx="50" cy="71" rx="17" ry="3.5" fill="none" stroke="#c0392b" stroke-width="1.1" opacity="0.75"/>
+                <text x="50" y="58" font-family="'Noto Serif JP', 'Sawarabi Mincho', serif" font-size="22" font-weight="900" fill="#20111a" text-anchor="middle" letter-spacing="0">論</text>
+                <path d="M 40 80 L 60 80 L 57 85 L 43 85 Z" fill="#181528" stroke="#ffd194" stroke-width="1.2"/>
+                <circle cx="50" cy="88" r="2.5" fill="#ffd194"/>
+                <path d="M 48 90 L 46 98 M 50 90 L 50 99 M 52 90 L 54 98" stroke="#ffd194" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="21" cy="44" r="1.5" fill="#ffd194" opacity="0.8"/>
+                <circle cx="78" cy="58" r="1.5" fill="#ffd194" opacity="0.8"/>
+                <circle cx="74" cy="35" r="1" fill="#fff" opacity="0.9"/>
+              </svg>
+            </div>
+            <h3 class="featured-event-title">Logic Lamp</h3>
+            <span class="featured-event-kanji-sub">論理の灯火 // ILLUMINATING WISDOM</span>
+            <p class="featured-event-desc">
+              Algorithmic puzzles, data structure conundrums, and brain-teasing problem solving. Illuminate computation's darkest pathways across multi-tiered speed deduction rounds.
+            </p>
+            <div class="featured-event-specs">
+              <span>👥 Squad: <strong>1–2 Scholars</strong></span>
+              <span>📅 Date: <strong>Oct 9, 2026</strong></span>
+              <span>🏆 Bounty: <strong>₹20,000</strong></span>
+            </div>
+            <div class="featured-event-card-actions">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+                <span>Fill Google Form</span>
+                <span>➔</span>
+              </a>
+              <button class="btn-view-details" onclick="openFeaturedEventModal('logic-lamp')">
+                View Arena Details
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 3: Promptify -->
+          <div class="featured-event-card">
+            <div class="featured-event-top">
+              <span class="featured-event-tag">GENERATIVE AI & PROMPTING</span>
+            </div>
+            <div class="featured-event-icon-box" title="The Kotodama Fude Crest">
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Calligraphy Brush Tracing Neural Spark and Command Prompt">
+                <defs>
+                  <linearGradient id="neuralArcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00f0ff"/>
+                    <stop offset="45%" stop-color="#f8a5c2"/>
+                    <stop offset="85%" stop-color="#e63946"/>
+                    <stop offset="100%" stop-color="#ffd194"/>
+                  </linearGradient>
+                  <radialGradient id="cyberAura" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#ff3366" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="50" cy="50" r="40" fill="url(#cyberAura)"/>
+                <path d="M 32 64 C 18 72 10 58 14 42 C 18 26 36 18 52 22 C 70 26 80 44 74 62 C 68 76 50 86 34 84 C 20 82 12 70 12 56" fill="none" stroke="url(#neuralArcGrad)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="140 8"/>
+                <circle cx="14" cy="42" r="3" fill="#ff79c6"/>
+                <circle cx="52" cy="22" r="3.5" fill="#00f0ff"/>
+                <circle cx="74" cy="62" r="3" fill="#ffd194"/>
+                <line x1="14" y1="42" x2="30" y2="48" stroke="#00f0ff" stroke-width="1" stroke-dasharray="2 2" opacity="0.8"/>
+                <line x1="52" y1="22" x2="52" y2="42" stroke="#f8a5c2" stroke-width="1" stroke-dasharray="2 2" opacity="0.8"/>
+                <rect x="25" y="42" width="36" height="25" rx="5" fill="#0e122b" stroke="#00f0ff" stroke-width="1.2"/>
+                <line x1="25" y1="48" x2="61" y2="48" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1"/>
+                <circle cx="29" cy="45.5" r="1" fill="#e63946"/>
+                <circle cx="32.5" cy="45.5" r="1" fill="#ffd194"/>
+                <circle cx="36" cy="45.5" r="1" fill="#50fa7b"/>
+                <path d="M 31 53 L 36 57 L 31 61" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="39" y1="61" x2="46" y2="61" stroke="#f8a5c2" stroke-width="2" stroke-linecap="round"/>
+                <g transform="rotate(-30 65 30)">
+                  <rect x="62" y="2" width="6" height="32" rx="1.5" fill="#b08d57" stroke="#3d2817" stroke-width="0.8"/>
+                  <line x1="62" y1="12" x2="68" y2="12" stroke="#5a3d24" stroke-width="1.2"/>
+                  <line x1="62" y1="22" x2="68" y2="22" stroke="#5a3d24" stroke-width="1.2"/>
+                  <rect x="61.5" y="34" width="7" height="6" rx="1" fill="#ffd194" stroke="#d4a373" stroke-width="0.8"/>
+                  <path d="M 62 40 C 62 45 64 50 65 54 C 66 50 68 45 68 40 Z" fill="#1e1828"/>
+                  <circle cx="65" cy="54" r="2.2" fill="#00f0ff"/>
+                </g>
+              </svg>
+            </div>
+            <h3 class="featured-event-title">Promptify</h3>
+            <span class="featured-event-kanji-sub">言霊の詠唱 // AI PROMPT MASTERY</span>
+            <p class="featured-event-desc">
+              Prompt engineering, generative AI battleground, and rapid creative & technical ideation using state-of-the-art LLMs. Master the digital spirit of Kotodama to build autonomous agents.
+            </p>
+            <div class="featured-event-specs">
+              <span>👥 Squad: <strong>1–3 Artisans</strong></span>
+              <span>📅 Date: <strong>Oct 10, 2026</strong></span>
+              <span>🏆 Bounty: <strong>₹35,000</strong></span>
+            </div>
+            <div class="featured-event-card-actions">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+                <span>Fill Google Form</span>
+                <span>➔</span>
+              </a>
+              <button class="btn-view-details" onclick="openFeaturedEventModal('promptify')">
+                View Arena Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         5. SCHEDULE / TIMELINE SCROLL (DAY 1 & DAY 2)
+         ========================================================== -->
+    <section class="schedule-section" id="schedule">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-badge">
+            <span class="kanji-accent">日程</span> Journey Path
+          </div>
+          <h2 class="section-title">The Way of The Innovator</h2>
+          <p class="section-subtitle">
+            Two days of continuous innovation, keynotes, and ceremonies.
+          </p>
+          <div class="twilight-divider">
+            <span class="twilight-divider-icon">📜</span>
+          </div>
+        </div>
+
+        <div class="schedule-day-toggle">
+          <button class="day-btn active" id="scheduleDay1Btn">
+            <span class="day-title">Day 1: October 9, 2026</span>
+            <span class="day-date">Inauguration & Stage 1 Preliminaries</span>
+          </button>
+          <button class="day-btn" id="scheduleDay2Btn">
+            <span class="day-title">Day 2: October 10, 2026</span>
+            <span class="day-date">Grand Finals & Awards Ceremony</span>
+          </button>
+        </div>
+
+        <div class="timeline-wrap" id="timelineContainer">
+          <!-- Populated dynamically by JavaScript -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================
+       6. REGISTRATION OVERLAY HUB (ALL 3 GOOGLE FORMS)
+       ========================================================== -->
+  <div class="reg-hub-overlay" id="regHubOverlay" role="dialog" aria-modal="true" aria-labelledby="regHubTitle">
+    <div class="reg-hub-window">
+      <button class="reg-hub-close-btn" onclick="closeRegistrationHub()" aria-label="Close Registration Hub">✕</button>
+      
+      <div class="reg-hub-header">
+        <span class="section-badge"><span class="kanji-accent">登録</span> Official Registration</span>
+        <h2 class="section-title" id="regHubTitle">Register for ANVESHAN 3.0</h2>
+        <p class="section-subtitle">
+          Select your arena below to submit your official Google Form registration.
+        </p>
+      </div>
+
+      <div class="reg-hub-cards-grid">
+        <!-- Hub Card 1: The Killer's Trail -->
+        <div class="reg-form-card">
+          <span class="reg-form-card-badge">Mystery & Deduction</span>
+          <h3 class="reg-form-card-title">The Killer's Trail</h3>
+          <span class="reg-form-card-kanji">殺人鬼の足跡</span>
+          <p class="reg-form-card-desc">
+            Forensic crime scene decoding, crypto-ciphers, and logical deduction under Mount Fuji's shadows.
+          </p>
+          <div style="font-size: 0.8rem; color: var(--sakura-rose); margin-bottom: 16px;">
+            👥 Squad: 2–4 Detectives • Oct 9, 2026
+          </div>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+            <span>Fill Google Form</span>
+            <span>➔</span>
+          </a>
+        </div>
+
+        <!-- Hub Card 2: Logic Lamp -->
+        <div class="reg-form-card">
+          <span class="reg-form-card-badge">Algorithmic Logic</span>
+          <h3 class="reg-form-card-title">Logic Lamp</h3>
+          <span class="reg-form-card-kanji">論理の灯火</span>
+          <p class="reg-form-card-desc">
+            Algorithmic puzzles, data structure conundrums, and speed deduction rounds to illuminate the darkness.
+          </p>
+          <div style="font-size: 0.8rem; color: var(--sakura-rose); margin-bottom: 16px;">
+            👥 Squad: 1–2 Scholars • Oct 9, 2026
+          </div>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+            <span>Fill Google Form</span>
+            <span>➔</span>
+          </a>
+        </div>
+
+        <!-- Hub Card 3: Promptify -->
+        <div class="reg-form-card">
+          <span class="reg-form-card-badge">Generative AI</span>
+          <h3 class="reg-form-card-title">Promptify</h3>
+          <span class="reg-form-card-kanji">言霊の詠唱</span>
+          <p class="reg-form-card-desc">
+            Prompt engineering battleground, multimodal synthesis, and autonomous agent orchestration.
+          </p>
+          <div style="font-size: 0.8rem; color: var(--sakura-rose); margin-bottom: 16px;">
+            👥 Squad: 1–3 Artisans • Oct 10, 2026
+          </div>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
+            <span>Fill Google Form</span>
+            <span>➔</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       7. FOOTER & HANKO SEAL
+       ========================================================== -->
+  <footer class="footer-main">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <a href="#hero" class="brand-logo" style="margin-bottom: 14px;">
+            <div class="brand-emblem">
+              <svg viewBox="0 0 120 120" class="brand-crest-svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="footerCrestDawnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffd194" stop-opacity="0.95"/>
+                    <stop offset="60%" stop-color="#f8a5c2" stop-opacity="0.85"/>
+                    <stop offset="100%" stop-color="#e63946" stop-opacity="0.95"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="54" fill="none" stroke="url(#footerCrestDawnGrad)" stroke-width="2.5" stroke-dasharray="290 40" opacity="0.85"/>
+                <circle cx="60" cy="60" r="48" fill="rgba(255, 255, 255, 0.03)"/>
+                <g transform="translate(34, 42)" fill="#e63946">
+                  <path d="M-18 -2 Q0 -6 18 -2 L16 1 Q0 -2 -16 1 Z"/>
+                  <rect x="-14" y="3" width="28" height="2" rx="0.5"/>
+                  <rect x="-9" y="0" width="2.5" height="24" rx="0.5"/>
+                  <rect x="6.5" y="0" width="2.5" height="24" rx="0.5"/>
+                </g>
+                <g transform="translate(74, 30)" fill="#ffd194">
+                  <line x1="0" y1="-12" x2="0" y2="0" stroke="#ffd194" stroke-width="1.5"/>
+                  <circle cx="0" cy="-12" r="1.5" fill="#ffd194"/>
+                  <path d="M-10 0 Q0 -3 10 0 L8 2 Q0 -1 -8 2 Z"/>
+                  <rect x="-5" y="2" width="10" height="4" fill="#f8a5c2"/>
+                  <path d="M-13 6 Q0 3 13 6 L11 8 Q0 5 -11 8 Z"/>
+                  <rect x="-6" y="8" width="12" height="5" fill="#f8a5c2"/>
+                  <path d="M-16 13 Q0 10 16 13 L14 15 Q0 12 -14 15 Z"/>
+                  <rect x="-7.5" y="15" width="15" height="5.5" fill="#f8a5c2"/>
+                  <path d="M-19 20.5 Q0 17.5 19 20.5 L17 23 Q0 20 -17 23 Z"/>
+                  <rect x="-9" y="23" width="18" height="6" fill="#f8a5c2"/>
+                  <path d="M-22 29 Q0 26 22 29 L20 32 Q0 29 -20 32 Z"/>
+                  <rect x="-11" y="32" width="22" height="7" fill="#f8a5c2"/>
+                </g>
+                <g transform="translate(54, 78)">
+                  <rect x="-11" y="-11" width="22" height="22" rx="3" fill="#e63946" stroke="#ffd194" stroke-width="1"/>
+                  <text x="0" y="5" font-family="'Noto Serif JP', serif" font-size="12" font-weight="900" fill="#ffffff" text-anchor="middle">印</text>
+                </g>
+              </svg>
+            </div>
+            <div class="brand-text-wrap">
+              <span class="brand-name">ANVESHAN 3.0</span>
+              <span class="brand-sub">CHUREITO // 探求</span>
+            </div>
+          </a>
+          <p style="color: var(--text-muted); font-size: 0.92rem; max-width: 320px; margin-bottom: 16px;">
+            PCCOE Annual Techfest uniting innovators beneath the sakura dawn on October 9–10, 2026.
+          </p>
+
+          <div class="hanko-seal" title="Official Seal of ANVESHAN 3.0">
+            <span class="hanko-kanji">探求</span>
+            <span class="hanko-text">ANVESHAN 3.0</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h5>Navigation</h5>
+          <ul class="footer-links">
+            <li><a href="#about">About Lore</a></li>
+            <li><a href="#events">Grand Arenas</a></li>
+            <li><a href="#schedule">Timeline</a></li>
+            <li><a href="javascript:void(0)" onclick="openRegistrationHub()">Register Here</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Grand Arenas</h5>
+          <ul class="footer-links">
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer">The Killer's Trail Form ➔</a></li>
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform" target="_blank" rel="noopener noreferrer">Logic Lamp Form ➔</a></li>
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform" target="_blank" rel="noopener noreferrer">Promptify Form ➔</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 ANVESHAN 3.0 // PCCOE ANNUAL TECHFEST. October 9 – 10, 2026. All rights reserved.
+        </div>
+        <div style="display: flex; gap: 22px;">
+          <a href="#about" style="color: var(--text-muted); text-decoration: none;">Privacy Protocol</a>
+          <a href="#about" style="color: var(--text-muted); text-decoration: none;">Rulebook</a>
+          <a href="#about" style="color: var(--text-muted); text-decoration: none;">Code of Conduct</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================
+       8. EVENT DETAIL MODAL
+       ========================================================== -->
+  <div class="modal-overlay" id="eventModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <span style="font-family: var(--font-japanese); font-size: 0.85rem; color: var(--rose-gold);" id="modalKanji">競技詳細</span>
+          <h3 style="font-family: var(--font-display); font-size: 1.45rem; color: #ffffff;" id="modalTitle">Event Title</h3>
+        </div>
+        <button class="modal-close-btn" id="modalCloseBtn" onclick="closeModal()" aria-label="Close Modal">✕</button>
+      </div>
+      <div class="modal-body" id="modalBodyContent">
+        <!-- Injected dynamically by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       JAVASCRIPT LOGIC
+       ========================================================== -->
+  <script>
+    /* ==========================================================
+       GENTLE SAKURA TWILIGHT PETAL ENGINE
+       ========================================================== */
+    class SakuraTwilightEngine {
+      constructor(canvasId = "sakura-canvas") {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext("2d");
+
+        this.petals = [];
+        this.maxPetals = window.innerWidth < 768 ? 16 : 28;
+        this.width = 0;
+        this.height = 0;
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        this.mouse = { x: -1000, y: -1000, vx: 0, vy: 0, prevX: -1000, prevY: -1000 };
+        this.isRunning = false;
+        this.animationId = null;
+
+        this.init();
+      }
+
+      init() {
+        this.resize();
+        window.addEventListener("resize", () => this.resize());
+
+        window.addEventListener("mousemove", (e) => {
+          this.mouse.vx = e.clientX - this.mouse.prevX;
+          this.mouse.vy = e.clientY - this.mouse.prevY;
+          this.mouse.prevX = e.clientX;
+          this.mouse.prevY = e.clientY;
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) this.stop();
+          else this.start();
+        });
+
+        for (let i = 0; i < this.maxPetals; i++) {
+          this.petals.push(this.createPetal(true));
+        }
+
+        this.start();
+      }
+
+      resize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width * this.dpr;
+        this.canvas.height = this.height * this.dpr;
+        this.canvas.style.width = `${this.width}px`;
+        this.canvas.style.height = `${this.height}px`;
+        this.ctx.scale(this.dpr, this.dpr);
+        this.maxPetals = this.width < 768 ? 16 : 28;
+      }
+
+      createPetal(randomY = false) {
+        const size = 6 + Math.random() * 6;
+        return {
+          x: Math.random() * this.width,
+          y: randomY ? Math.random() * this.height : -20 - Math.random() * 20,
+          size: size,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 1.5,
+          flipAngle: Math.random() * Math.PI,
+          flipSpeed: 0.015 + Math.random() * 0.02,
+          vx: 0.6 + Math.random() * 0.9,
+          vy: 0.8 + Math.random() * 1.2,
+          swayAngle: Math.random() * Math.PI * 2,
+          swaySpeed: 0.012 + Math.random() * 0.02,
+          colorType: Math.random() > 0.6 ? "rose" : (Math.random() > 0.25 ? "sakura" : "white"),
+          opacity: 0.55 + Math.random() * 0.35
+        };
+      }
+
+      update() {
+        for (let i = 0; i < this.petals.length; i++) {
+          const p = this.petals[i];
+          p.swayAngle += p.swaySpeed;
+          p.rotation += p.rotationSpeed;
+          p.flipAngle += p.flipSpeed;
+
+          p.x += p.vx + Math.sin(p.swayAngle) * 0.7;
+          p.y += p.vy + Math.cos(p.swayAngle) * 0.3;
+
+          const dx = p.x - this.mouse.x;
+          const dy = p.y - this.mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120 && dist > 0) {
+            const force = (1 - dist / 120) * 2.5;
+            p.x += Math.cos(Math.atan2(dy, dx)) * force + this.mouse.vx * 0.08;
+            p.y += Math.sin(Math.atan2(dy, dx)) * force;
+          }
+
+          if (p.x > this.width + 30 || p.y > this.height + 25) {
+            this.petals[i] = this.createPetal(false);
+          }
+        }
+      }
+
+      draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        for (let i = 0; i < this.petals.length; i++) {
+          const p = this.petals[i];
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.scale(1, Math.cos(p.flipAngle));
+          this.ctx.globalAlpha = p.opacity;
+
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, 0);
+          this.ctx.bezierCurveTo(p.size * 0.5, -p.size * 0.4, p.size, -p.size * 0.1, p.size, p.size * 0.5);
+          this.ctx.bezierCurveTo(p.size * 0.7, p.size * 1.1, p.size * 0.2, p.size * 1.2, 0, p.size * 1.35);
+          this.ctx.bezierCurveTo(-p.size * 0.2, p.size * 1.2, -p.size * 0.7, p.size * 1.1, -p.size, p.size * 0.5);
+          this.ctx.bezierCurveTo(-p.size, -p.size * 0.1, -p.size * 0.5, -p.size * 0.4, 0, 0);
+          this.ctx.closePath();
+
+          const grad = this.ctx.createRadialGradient(0, p.size * 0.4, 0, 0, p.size * 0.4, p.size * 1.1);
+          if (p.colorType === "rose") {
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(0.5, "#f8a5c2");
+            grad.addColorStop(1, "#e63946");
+          } else if (p.colorType === "white") {
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(0.6, "#fff1f5");
+            grad.addColorStop(1, "#fbc2eb");
+          } else {
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(0.5, "#fbc2eb");
+            grad.addColorStop(1, "#f8a5c2");
+          }
+
+          this.ctx.fillStyle = grad;
+          this.ctx.shadowColor = "rgba(248, 165, 194, 0.4)";
+          this.ctx.shadowBlur = 4;
+          this.ctx.fill();
+
+          this.ctx.restore();
+        }
+      }
+
+      loop() {
+        if (!this.isRunning) return;
+        this.update();
+        this.draw();
+        this.animationId = requestAnimationFrame(() => this.loop());
+      }
+
+      start() {
+        if (!this.isRunning) {
+          this.isRunning = true;
+          this.loop();
+        }
+      }
+
+      stop() {
+        this.isRunning = false;
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+      }
+    }
+
+    /* ==========================================================
+       EVENT & REGISTRATION DATA (WITH DIRECT GOOGLE FORMS)
+       ========================================================== */
+    const GOOGLE_FORMS = {
+      killersTrail: "https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1",
+      logicLamp: "https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform",
+      promptify: "https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform"
+    };
+
+    const FEATURED_EVENTS_DATA = {
+      "killers-trail": {
+        id: "killers-trail",
+        title: "The Killer's Trail",
+        kanji: "殺人鬼の足跡",
+        subtitle: "THE CRIMSON BLADE",
+        categoryLabel: "MYSTERY & DEDUCTION",
+        prizePool: "₹25,000",
+        teamSize: "2–4 Detectives",
+        registrationFee: "₹250 / Team",
+        venue: "Amphitheatre Dojo // Crime Scene Arena",
+        date: "October 9, 2026",
+        time: "10:30 AM – 02:30 PM IST",
+        formUrl: GOOGLE_FORMS.killersTrail,
+        fullDesc: "Step into a shadow-shrouded crime dojo in Neo-Kyoto. When the grand master archivist of the digital scrolls is found silenced, a trail of cryptographic evidence, corrupted memory logs, and cryptic cipher scrolls is left behind. Your detective clan must analyze forensic crime scene clues, cross-examine suspects, and unravel intricate deductive puzzles to identify the culprit before dawn.",
+        rules: [
+          "Clans must consist of 2 to 4 registered participants.",
+          "Access to external AI models is prohibited during live crime scene deduction.",
+          "Evidence scrolls must be inspected carefully; tampering leads to immediate disqualification.",
+          "Scoring is weighted: 50% deduction accuracy, 30% speed of reconstruction, 20% oral defense."
+        ]
+      },
+      "logic-lamp": {
+        id: "logic-lamp",
+        title: "Logic Lamp",
+        kanji: "論理の灯火",
+        subtitle: "ILLUMINATING WISDOM",
+        categoryLabel: "ALGORITHMIC LOGIC",
+        prizePool: "₹20,000",
+        teamSize: "1–2 Scholars",
+        registrationFee: "₹150 / Team",
+        venue: "Sumi-e Logic Lab // Block C (3rd Floor)",
+        date: "October 9, 2026",
+        time: "02:00 PM – 05:00 PM IST",
+        formUrl: GOOGLE_FORMS.logicLamp,
+        fullDesc: "Inspired by the classical Japanese paper lantern guiding scholars through the mist, Logic Lamp tests the purest heights of your algorithmic intuition. Scholars will face three grueling tiers: Tier 1 (Shoshin) focuses on rapid lateral thinking and discrete logic teasers; Tier 2 (Chuden) presents complex algorithmic mazes and state-machine riddles; Tier 3 (Okuden) demands live proofs for graph and dynamic programming conundrums.",
+        rules: [
+          "Open to individual scholars or duos (1–2 members).",
+          "Calculators and internet devices are strictly forbidden during the test rounds.",
+          "Points are awarded for algorithmic correctness, optimal space-time complexity, and creative proofs.",
+          "Tie-breakers will be resolved via sudden-death speed deduction showdowns."
+        ]
+      },
+      "promptify": {
+        id: "promptify",
+        title: "Promptify",
+        kanji: "言霊の詠唱",
+        subtitle: "AI PROMPT MASTERY",
+        categoryLabel: "GENERATIVE AI & PROMPTING",
+        prizePool: "₹35,000",
+        teamSize: "1–3 Artisans",
+        registrationFee: "₹300 / Team",
+        venue: "Imperial Cloud Dojo // Virtual & On-Site Hybrid",
+        date: "October 10, 2026",
+        time: "10:00 AM – 04:00 PM IST",
+        formUrl: GOOGLE_FORMS.promptify,
+        fullDesc: "Harness the power of Kotodama (言霊) — the spiritual energy of words — in the ultimate generative AI battleground. Prompt engineers and creative technologists compete in rapid-fire sprints: System Prompt Jailbreaking, Zero-Shot Multimodal Visual Synthesis, Complex Context Reasoning under token constraints, and Autonomous Agent Workflow Orchestration using frontier LLMs.",
+        rules: [
+          "Teams can have 1 to 3 participants.",
+          "Access to enterprise LLM APIs will be provided with identical token quotas for all clans.",
+          "Prompts, chain-of-thought scratchpads, and resulting artifacts must be submitted to the arena tribunal.",
+          "Evaluation rubrics: Prompt precision (30%), output quality and adherence (40%), innovation & agentic design (30%)."
+        ]
+      }
+    };
+
+    const SCHEDULE_DATA = {
+      day1: [
+        {
+          time: "09:00 AM - 10:30 AM",
+          track: "CEREMONY",
+          title: "Inaugural Sakura Procession",
+          kanji: "開会式",
+          venue: "Main Auditorium",
+          icon: "⛩️"
+        },
+        {
+          time: "10:30 AM - 02:30 PM",
+          track: "MYSTERY",
+          title: "The Killer's Trail",
+          kanji: "殺人鬼の足跡",
+          venue: "Amphitheatre Crime Dojo",
+          icon: "⚔️"
+        },
+        {
+          time: "02:00 PM - 05:00 PM",
+          track: "ALGORITHMS",
+          title: "Logic Lamp: Preliminary Rounds",
+          kanji: "論理の灯火",
+          venue: "Sumi-e Logic Lab",
+          icon: "🏮"
+        }
+      ],
+      day2: [
+        {
+          time: "10:00 AM - 04:00 PM",
+          track: "GEN AI",
+          title: "Promptify: AI Prompt Mastery",
+          kanji: "言霊の詠唱",
+          venue: "Imperial Cloud Dojo",
+          icon: "✨"
+        },
+        {
+          time: "04:30 PM - 06:30 PM",
+          track: "FINALE",
+          title: "Grand Awards & Valedictory Ceremony",
+          kanji: "表彰式",
+          venue: "Main Concourse Stage",
+          icon: "🏆"
+        }
+      ]
+    };
+
+    /* ==========================================================
+       MAIN APP INITIALIZATION
+       ========================================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      new SakuraTwilightEngine("sakura-canvas");
+      initNavbar();
+      renderSchedule("day1");
+      setupScheduleTabs();
+
+      // Close modal on Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal();
+          closeRegistrationHub();
+        }
+      });
+    });
+
+    function initNavbar() {
+      const navbar = document.getElementById("navbar");
+      const navToggle = document.getElementById("mobileNavToggle");
+      const mobileDrawer = document.getElementById("mobileDrawer");
+      const links = document.querySelectorAll(".nav-link, .mobile-nav-link");
+
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 30) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      if (navToggle && mobileDrawer) {
+        navToggle.addEventListener("click", () => {
+          const isOpen = mobileDrawer.classList.toggle("open");
+          navToggle.classList.toggle("open");
+          navToggle.setAttribute("aria-expanded", isOpen);
+        });
+
+        links.forEach((link) => {
+          link.addEventListener("click", () => {
+            mobileDrawer.classList.remove("open");
+            navToggle.classList.remove("open");
+            navToggle.setAttribute("aria-expanded", "false");
+          });
+        });
+      }
+    }
+
+    /* ==========================================================
+       REGISTRATION HUB OVERLAY CONTROLS
+       ========================================================== */
+    function openRegistrationHub() {
+      const hub = document.getElementById("regHubOverlay");
+      if (hub) {
+        hub.classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function closeRegistrationHub() {
+      const hub = document.getElementById("regHubOverlay");
+      if (hub) {
+        hub.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+    }
+
+    // Close on clicking backdrop
+    const hubEl = document.getElementById("regHubOverlay");
+    if (hubEl) {
+      hubEl.addEventListener("click", (e) => {
+        if (e.target === hubEl) closeRegistrationHub();
+      });
+    }
+
+    /* ==========================================================
+       EVENT DETAILS MODAL
+       ========================================================== */
+    function openFeaturedEventModal(id) {
+      const ev = FEATURED_EVENTS_DATA[id];
+      if (!ev) return;
+
+      const overlay = document.getElementById("eventModalOverlay");
+      const title = document.getElementById("modalTitle");
+      const kanji = document.getElementById("modalKanji");
+      const body = document.getElementById("modalBodyContent");
+
+      if (kanji) kanji.innerText = `${ev.kanji} // ${ev.subtitle || ev.categoryLabel}`;
+      if (title) title.innerText = ev.title;
+
+      if (body) {
+        body.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; margin-bottom: 20px;">
+            <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+              <div style="font-size: 0.72rem; color: var(--sakura-pink);">BOUNTY</div>
+              <div style="font-family: var(--font-display); font-weight: 700; color: var(--dawn-gold); font-size: 1.05rem;">${ev.prizePool}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+              <div style="font-size: 0.72rem; color: var(--sakura-pink);">SQUAD</div>
+              <div style="font-family: var(--font-display); font-weight: 700; color: #fff;">${ev.teamSize}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+              <div style="font-size: 0.72rem; color: var(--sakura-pink);">ENTRY</div>
+              <div style="font-family: var(--font-display); font-weight: 700; color: #fff;">${ev.registrationFee}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+              <div style="font-size: 0.72rem; color: var(--sakura-pink);">DATE</div>
+              <div style="font-family: var(--font-display); font-weight: 700; color: #fff; font-size: 0.82rem;">${ev.date}</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h5 style="font-family: var(--font-display); font-size: 1.1rem; color: #fff; margin-bottom: 8px;">// ARENA BRIEF</h5>
+            <p style="color: var(--text-soft); font-size: 0.95rem; line-height: 1.6;">${ev.fullDesc}</p>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <h5 style="font-family: var(--font-display); font-size: 1.1rem; color: #fff; margin-bottom: 8px;">// GUIDELINES & BUSHIDO CODE</h5>
+            <ul style="padding-left: 20px; color: var(--text-soft); font-size: 0.9rem; display: flex; flex-direction: column; gap: 6px;">
+              ${ev.rules.map((r) => `<li>${r}</li>`).join("")}
+            </ul>
+          </div>
+
+          <div style="background: rgba(18,24,45,0.85); border: 1px solid rgba(248,165,194,0.3); border-radius: 12px; padding: 24px; text-align: center;">
+            <h5 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 8px;">OFFICIAL REGISTRATION</h5>
+            <p style="color: var(--text-soft); font-size: 0.9rem; margin-bottom: 18px;">Click below to open and submit the official Google Registration Form for this event.</p>
+            <a href="${ev.formUrl}" target="_blank" rel="noopener noreferrer" class="btn-pagoda" style="width: 100%; justify-content: center; font-size: 0.95rem; text-decoration: none;">
+              <span>Fill Official Google Form</span>
+              <span>➔</span>
+            </a>
+          </div>
+        `;
+      }
+
+      overlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById("eventModalOverlay");
+      if (overlay) {
+        overlay.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+    }
+
+    const modalOverlayEl = document.getElementById("eventModalOverlay");
+    if (modalOverlayEl) {
+      modalOverlayEl.addEventListener("click", (e) => {
+        if (e.target === modalOverlayEl) closeModal();
+      });
+    }
+
+    /* ==========================================================
+       SCHEDULE TAB SWITCHING
+       ========================================================== */
+    function setupScheduleTabs() {
+      const b1 = document.getElementById("scheduleDay1Btn");
+      const b2 = document.getElementById("scheduleDay2Btn");
+
+      if (b1 && b2) {
+        b1.addEventListener("click", () => {
+          b1.classList.add("active");
+          b2.classList.remove("active");
+          renderSchedule("day1");
+        });
+        b2.addEventListener("click", () => {
+          b2.classList.add("active");
+          b1.classList.remove("active");
+          renderSchedule("day2");
+        });
+      }
+    }
+
+    function renderSchedule(day) {
+      const c = document.getElementById("timelineContainer");
+      if (!c) return;
+
+      const items = SCHEDULE_DATA[day] || [];
+      c.innerHTML = `
+        <div class="timeline-line"></div>
+        ${items.map((item) => `
+          <div class="timeline-item">
+            <div class="timeline-node">${item.icon}</div>
+            <div class="timeline-box">
+              <div class="timeline-meta">
+                <span class="timeline-time">🕒 ${item.time}</span>
+                <span class="timeline-track">${item.track}</span>
+              </div>
+              <h4 class="timeline-event-name">${item.title} <span style="font-family: var(--font-japanese); font-size: 0.78rem; color: var(--rose-gold);">${item.kanji}</span></h4>
+              <div class="timeline-venue">📍 ${item.venue}</div>
+            </div>
+          </div>
+        `).join("")}
+      `;
+    }
+  </script>
+</body>
+</html>

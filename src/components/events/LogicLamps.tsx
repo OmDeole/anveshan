@@ -50,16 +50,26 @@ export const LogicLamps: React.FC<LogicLampsProps> = ({ onClose, onGoToTrainStat
           Chureito Pagoda Steps • Waypoint Gamma
         </p>
 
-        {/* Content Section - You can easily edit or replace this content */}
+        {/* Content Section */}
         <div className="space-y-4 text-stone-300 text-sm leading-relaxed border-t border-white/10 pt-6">
           <p className="text-stone-300">
             Welcome to <strong className="text-emerald-300">Logic Lamps</strong>.
+            Inspired by the classical Japanese paper lantern guiding scholars through the mist, Logic Lamp tests the purest heights of your algorithmic intuition across multi-tiered speed deduction rounds.
           </p>
-          <div className="p-4 rounded-2xl bg-stone-950/60 border border-white/10 text-stone-300">
-            <p className="text-xs text-stone-400 italic">
-              {/* EDIT YOUR EVENT CONTENT HERE */}
-              Put your logic puzzles, coding riddles, algorithmic challenges, or rules for Logic Lamps right here in this file.
-            </p>
+          <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Official Registration Open</div>
+              <div className="text-[11px] text-stone-300">Squad: 1–2 Scholars • Oct 9, 2026</div>
+            </div>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs tracking-wider uppercase shadow-lg transition-all active:scale-95 shrink-0 flex items-center gap-2"
+            >
+              <span>Fill Google Form</span>
+              <span>➔</span>
+            </a>
           </div>
         </div>
 

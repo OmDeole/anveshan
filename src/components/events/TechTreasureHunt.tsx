@@ -65,9 +65,21 @@ export const TechTreasureHunt: React.FC<TechTreasureHuntProps> = ({
             Under the moonlight of Mount Fuji, your investigative team must piece
             together the clues and uncover the truth hidden in the temple grounds.
           </p>
-          <p className="text-stone-500 text-xs italic">
-            Registration link coming soon.
-          </p>
+          <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Official Registration Open</div>
+              <div className="text-[11px] text-stone-300">Squad: 2–4 Detectives • Oct 9, 2026</div>
+            </div>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-white font-bold text-xs tracking-wider uppercase shadow-lg transition-all active:scale-95 shrink-0 flex items-center gap-2"
+            >
+              <span>Fill Google Form</span>
+              <span>➔</span>
+            </a>
+          </div>
         </div>
 
         {/* Footer Navigation Buttons */}

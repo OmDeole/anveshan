@@ -50,16 +50,26 @@ export const Promptify: React.FC<PromptifyProps> = ({ onClose, onGoToTrainStatio
           Sakura Grove Sanctuary • Waypoint Beta
         </p>
 
-        {/* Content Section - You can easily edit or replace this content */}
+        {/* Content Section */}
         <div className="space-y-4 text-stone-300 text-sm leading-relaxed border-t border-white/10 pt-6">
           <p className="text-stone-300">
             Welcome to <strong className="text-purple-300">Promptify</strong>.
+            Harness the power of Kotodama (言霊) — the spiritual energy of words — in the ultimate generative AI battleground. Prompt engineers and creative technologists compete in rapid-fire sprints.
           </p>
-          <div className="p-4 rounded-2xl bg-stone-950/60 border border-white/10 text-stone-300">
-            <p className="text-xs text-stone-400 italic">
-              {/* EDIT YOUR EVENT CONTENT HERE */}
-              Put your prompt engineering challenges, AI creativity tasks, or guidelines for Promptify right here in this file.
-            </p>
+          <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold text-purple-300 uppercase tracking-wider">Official Registration Open</div>
+              <div className="text-[11px] text-stone-300">Squad: 1–3 Artisans • Oct 10, 2026</div>
+            </div>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs tracking-wider uppercase shadow-lg transition-all active:scale-95 shrink-0 flex items-center gap-2"
+            >
+              <span>Fill Google Form</span>
+              <span>➔</span>
+            </a>
           </div>
         </div>
 

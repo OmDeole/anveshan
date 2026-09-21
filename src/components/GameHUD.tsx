@@ -61,42 +61,77 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           )}
         </div>
 
-        {/* Right: Action buttons (Recenter Camera, Mute, Fullscreen) */}
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            id="recenter-camera-button"
-            type="button"
-            onClick={onResetCamera}
-            title="Recenter Camera Behind Samurai"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 text-xs transition-colors shadow-lg active:scale-95"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Recenter View</span>
-          </button>
+        {/* Right: Column layout — small icon controls on top, bigger Quick Register below */}
+        <div className="pointer-events-auto flex flex-col items-end gap-2.5">
 
-          <button
-            id="ambient-audio-button"
-            type="button"
-            onClick={handleToggleSound}
-            title={isSoundActive ? 'Mute Background Soundtrack' : 'Play Background Soundtrack'}
-            className="p-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 transition-colors shadow-lg active:scale-95"
-          >
-            {isSoundActive ? (
-              <Volume2 className="w-4 h-4 text-emerald-400" />
-            ) : (
-              <VolumeX className="w-4 h-4 text-stone-400" />
-            )}
-          </button>
+          {/* Row 1: Recenter, Mute, Fullscreen icon buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              id="recenter-camera-button"
+              type="button"
+              onClick={onResetCamera}
+              title="Recenter Camera Behind Samurai"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 text-xs transition-colors shadow-lg active:scale-95"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Recenter View</span>
+            </button>
 
-          <button
-            id="fullscreen-button"
-            type="button"
-            onClick={toggleFullscreen}
-            title="Toggle Fullscreen"
-            className="p-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 transition-colors shadow-lg active:scale-95"
+            <button
+              id="ambient-audio-button"
+              type="button"
+              onClick={handleToggleSound}
+              title={isSoundActive ? 'Mute Background Soundtrack' : 'Play Background Soundtrack'}
+              className="p-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 transition-colors shadow-lg active:scale-95"
+            >
+              {isSoundActive ? (
+                <Volume2 className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-stone-400" />
+              )}
+            </button>
+
+            <button
+              id="fullscreen-button"
+              type="button"
+              onClick={toggleFullscreen}
+              title="Toggle Fullscreen"
+              className="p-2 rounded-xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/10 hover:border-white/30 text-white/90 transition-colors shadow-lg active:scale-95"
+            >
+              <Maximize2 className="w-4 h-4 text-stone-300" />
+            </button>
+          </div>
+
+          {/* Row 2: Quick Register — bigger, vermilion, opens landing.html in new tab */}
+          <style>{`
+            @keyframes hudRegisterPulse {
+              0%, 100% { box-shadow: 0 4px 20px rgba(220,38,38,0.55), 0 0 14px rgba(252,211,77,0.3); }
+              50%       { box-shadow: 0 7px 32px rgba(220,38,38,0.88), 0 0 26px rgba(252,211,77,0.65); }
+            }
+          `}</style>
+          <a
+            id="quick-register-button"
+            href="/landing.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Register for ANVESHAN 3.0 Events"
+            style={{ animation: 'hudRegisterPulse 2.8s ease-in-out infinite' }}
+            className="flex items-center gap-2.5 px-5 py-3 rounded-xl
+              bg-gradient-to-r from-red-600 via-rose-600 to-red-700
+              hover:from-red-500 hover:via-rose-500 hover:to-red-600
+              border border-amber-400/60 hover:border-amber-300
+              text-white text-sm font-bold tracking-widest uppercase
+              transition-all active:scale-95 group"
           >
-            <Maximize2 className="w-4 h-4 text-stone-300" />
-          </button>
+            {/* Pulsing live beacon */}
+            <span
+              className="w-2.5 h-2.5 rounded-full bg-amber-300 shrink-0"
+              style={{ boxShadow: '0 0 8px 3px rgba(252,211,77,0.9)' }}
+            />
+            <span>Quick Register</span>
+            <span className="text-base leading-none group-hover:translate-x-0.5 transition-transform">⛩️</span>
+          </a>
+
         </div>
       </div>
 
