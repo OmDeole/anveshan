@@ -1,0 +1,6 @@
+{
+  "name": "Samurai Mountain Adventure",
+  "description": "A 3D third-person exploration game featuring a stylized low-poly samurai in a scenic mountain landscape inspired by Mount Fuji and the Chureito Pagoda.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

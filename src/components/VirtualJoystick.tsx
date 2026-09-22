@@ -1,0 +1,194 @@
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+
+interface VirtualJoystickProps {
+  onMove: (x: number, y: number) => void;
+  onJump?: () => void;
+  onSprintToggle?: (sprint: boolean) => void;
+  isSprinting?: boolean;
+}
+
+export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({
+  onMove,
+  onJump,
+  onSprintToggle,
+  isSprinting = false,
+}) => {
+  const baseRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const touchIdRef = useRef<number | null>(null);
+
+  const handlePointer = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!baseRef.current) return;
+      const rect = baseRef.current.getBoundingClientRect();
+      const currentRadius = Math.max((rect.width / 2) - 12, 36);
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      let dx = clientX - centerX;
+      let dy = clientY - centerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > currentRadius) {
+        dx = (dx / dist) * currentRadius;
+        dy = (dy / dist) * currentRadius;
+      }
+
+      setPosition({ x: dx, y: dy });
+
+      // Normalized vector: x (-1 to 1), y (-1 to 1, with UP being +1)
+      const normX = dx / currentRadius;
+      const normY = -dy / currentRadius; // Invert so up is +1
+      onMove(normX, normY);
+    },
+    [onMove]
+  );
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActive(true);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    handlePointer(e.clientX, e.clientY);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!active) return;
+    e.preventDefault();
+    e.stopPropagation();
+    handlePointer(e.clientX, e.clientY);
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActive(false);
+    setPosition({ x: 0, y: 0 });
+    onMove(0, 0);
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // safe fallback
+    }
+  };
+
+  const handleActionPointerDown = (
+    e: React.PointerEvent<HTMLButtonElement>,
+    action: () => void
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
+
+  const handleActionKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    action: () => void
+  ) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+
+  // Keyboard navigation fallback listener for visual joystick reflection
+  useEffect(() => {
+    const handleKeyEnd = () => {
+      if (!active) {
+        // keep resting position
+      }
+    };
+    window.addEventListener('keyup', handleKeyEnd);
+    return () => window.removeEventListener('keyup', handleKeyEnd);
+  }, [active]);
+
+  return (
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(1rem,env(safe-area-inset-left))] right-[max(1rem,env(safe-area-inset-right))] flex items-end justify-between pointer-events-none select-none z-30">
+      {/* Analog Joystick (Left Side) */}
+      <div className="pointer-events-auto flex flex-col items-center">
+        <div
+          id="virtual-joystick-base"
+          ref={baseRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className={`relative w-28 h-28 sm:w-36 sm:h-36 rounded-full flex items-center justify-center transition-colors duration-200 touch-none shadow-2xl backdrop-blur-md border ${
+            active
+              ? 'bg-red-950/40 border-red-500/60 shadow-red-900/30'
+              : 'bg-black/35 border-white/20 hover:border-white/40'
+          }`}
+          style={{ touchAction: 'none' }}
+        >
+          {/* Subtle Japanese Cardinal Crosshair lines */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-25">
+            <div className="w-full h-px bg-red-200" />
+            <div className="absolute h-full w-px bg-red-200" />
+          </div>
+
+          {/* Inner ring marker */}
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-white/10 pointer-events-none" />
+
+          {/* Draggable Knob */}
+          <div
+            id="virtual-joystick-knob"
+            className={`absolute w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border shadow-lg transition-transform ${
+              active
+                ? 'bg-red-600/90 border-red-300 scale-105 shadow-red-600/50'
+                : 'bg-stone-800/80 border-stone-400/50'
+            }`}
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px)`,
+              transition: active ? 'none' : 'transform 0.15s ease-out',
+            }}
+          >
+            {/* Center crest dot */}
+            <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${active ? 'bg-amber-300' : 'bg-stone-300/80'}`} />
+          </div>
+        </div>
+
+        <span className="mt-1.5 text-[10px] sm:text-[11px] font-medium tracking-wider text-white/60 uppercase select-none">
+          Move
+        </span>
+      </div>
+
+      {/* Action Buttons for Mobile / Quick Action (Right Side) */}
+      <div className="pointer-events-auto flex items-end gap-2.5 sm:gap-3">
+        {/* Sprint Toggle Button */}
+        {onSprintToggle && (
+          <button
+            id="sprint-button"
+            type="button"
+            onPointerDown={(e) => handleActionPointerDown(e, () => onSprintToggle(!isSprinting))}
+            onKeyDown={(e) => handleActionKeyDown(e, () => onSprintToggle(!isSprinting))}
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center border text-xs font-semibold backdrop-blur-md shadow-xl transition-all active:scale-95 ${
+              isSprinting
+                ? 'bg-amber-500/80 border-amber-300 text-stone-900 shadow-amber-500/40'
+                : 'bg-black/40 border-white/20 text-white/80 hover:border-white/40'
+            }`}
+            style={{ touchAction: 'manipulation' }}
+          >
+            <span className="text-sm sm:text-base leading-none">疾</span>
+            <span className="text-[8px] sm:text-[9px] tracking-wider uppercase opacity-80">Run</span>
+          </button>
+        )}
+
+        {/* Jump Button */}
+        {onJump && (
+          <button
+            id="jump-button"
+            type="button"
+            onPointerDown={(e) => handleActionPointerDown(e, onJump)}
+            onKeyDown={(e) => handleActionKeyDown(e, onJump)}
+            className="w-13 h-13 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center border bg-red-600/80 hover:bg-red-500/90 border-red-300/60 text-white font-bold backdrop-blur-md shadow-xl shadow-red-950/50 active:scale-95 transition-all"
+            style={{ touchAction: 'manipulation' }}
+          >
+            <span className="text-base sm:text-lg leading-none">跳</span>
+            <span className="text-[9px] sm:text-[10px] tracking-wider uppercase text-red-100/90">Jump</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
