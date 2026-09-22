@@ -18,7 +18,7 @@ import { LogicLamps } from './components/events/LogicLamps';
 import { EventCompass } from './components/EventCompass';
 import { TrainBoardingCinematic } from './components/TrainBoardingCinematic';
 
-type AppPhase = 'cinematic' | 'mountain-station' | 'boarding' | 'temple';
+type AppPhase = 'cinematic' | 'mountain-station' | 'boarding' | 'temple' | 'promptify' | 'logic-lamps';
 
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,19 +88,14 @@ export default function App() {
   };
 
   const handleBoardingComplete = () => {
-    setCurrentPhase('temple');
     setNearbyTrain(null);
-    if (engineRef.current) {
-      engineRef.current.setEventModalOpen(false);
-      // When the user boards the train of the killer's trail, remove the other two events from the temple!
-      let activeEventsForTrain: SanctuaryEventId[] = ['tech-treasure-hunt'];
-      if (boardingTrain?.id === 'arya') {
-        activeEventsForTrain = ['promptify'];
-      } else if (boardingTrain?.id === 'sandip') {
-        activeEventsForTrain = ['logic-lamps'];
-      }
-      engineRef.current.switchEnvironment('temple', false, activeEventsForTrain);
-    }
+    setCurrentPhase(
+      boardingTrain?.id === 'arya'
+        ? 'promptify'
+        : boardingTrain?.id === 'sandip'
+        ? 'logic-lamps'
+        : 'temple'
+    );
   };
 
   // Keyboard shortcut 'KeyE' to interact with nearby train, nearby event, or return-to-station portal
@@ -109,7 +104,7 @@ export default function App() {
       if ((e.code === 'KeyE' || e.key === 'e' || e.key === 'E') && !activeEvent) {
         if (currentPhase === 'mountain-station' && nearbyTrain) {
           handleBoardTrain(nearbyTrain.id);
-        } else if (currentPhase === 'temple') {
+        } else if (currentPhase === 'temple' || currentPhase === 'promptify' || currentPhase === 'logic-lamps') {
           if (isNearStationPortal) {
             handleGoToTrainStation();
           } else if (nearbyEvent) {
@@ -134,7 +129,7 @@ export default function App() {
     setGameError(null);
 
     // Initialize 3D WebGL engine in appropriate environment
-    const initialEnv = currentPhase === 'temple' ? 'temple' : 'mountain-station';
+    const initialEnv = currentPhase === 'mountain-station' ? 'mountain-station' : currentPhase;
     let engine: GameEngine;
     try {
       engine = new GameEngine(containerRef.current, initialEnv);
@@ -246,7 +241,13 @@ export default function App() {
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-950 text-white z-50">
               <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-sm tracking-widest text-stone-300 uppercase">
-                {currentPhase === 'mountain-station' ? 'Entering Fujimi Mountain Ridge...' : 'Entering Sacred Sanctuary...'}
+                {currentPhase === 'mountain-station'
+                  ? 'Entering Fujimi Mountain Ridge...'
+                  : currentPhase === 'promptify'
+                  ? 'Entering Promptify Night Market...'
+                  : currentPhase === 'logic-lamps'
+                  ? 'Entering Logic Lamps Village...'
+                  : 'Entering Sacred Sanctuary...'}
               </p>
             </div>
           )}
@@ -289,7 +290,7 @@ export default function App() {
               onResetCamera={handleResetCamera}
               isSprinting={isSprinting}
               onGoToTrainStation={handleGoToTrainStation}
-              currentPhase={currentPhase === 'temple' ? 'temple' : 'mountain-station'}
+              currentPhase={currentPhase === 'mountain-station' ? 'mountain-station' : 'temple'}
             />
           )}
 
@@ -329,7 +330,7 @@ export default function App() {
           )}
 
           {/* Temple Sanctuary: Return to Train Station Gate Prompt */}
-          {currentPhase === 'temple' && isNearStationPortal && !activeEvent && (
+          {(currentPhase === 'temple' || currentPhase === 'promptify' || currentPhase === 'logic-lamps') && isNearStationPortal && !activeEvent && (
             <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
               <button
                 type="button"
@@ -347,7 +348,7 @@ export default function App() {
           )}
 
           {/* Temple Sanctuary: Proximity Interaction Prompt */}
-          {currentPhase === 'temple' && nearbyEvent && !activeEvent && !isNearStationPortal && (
+          {(currentPhase === 'temple' || currentPhase === 'promptify' || currentPhase === 'logic-lamps') && nearbyEvent && !activeEvent && !isNearStationPortal && (
             <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
               <button
                 type="button"

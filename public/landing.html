@@ -1876,10 +1876,13 @@
             <p class="featured-event-desc">
               Investigative problem-solving, crime scene decoding, and logic deduction challenge. Step into an intricate forensic labyrinth where digital ciphers and veiled testimonies conceal the culprit.
             </p>
+            <p style="font-size: 0.82rem; color: var(--sakura-rose); margin: 0 0 16px;">
+              <strong>Non-PCCOE teams:</strong> 3–4 detectives · ₹100 / Team
+            </p>
 
             <div class="featured-event-card-actions">
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
-                <span>Fill Google Form</span>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct" aria-label="Open the Killer's Trail non-PCCOE Google registration form">
+                <span>Register Non-PCCOE Team</span>
                 <span>➔</span>
               </a>
               <button class="btn-view-details" onclick="openFeaturedEventModal('killers-trail')">
@@ -2068,10 +2071,10 @@
             Forensic crime scene decoding, crypto-ciphers, and logical deduction under Mount Fuji's shadows.
           </p>
           <div style="font-size: 0.8rem; color: var(--sakura-rose); margin-bottom: 16px;">
-            👥 Squad: 2–4 Detectives • Oct 9, 2026
+            👥 Squad: 3–4 Detectives • Non-PCCOE: ₹100 / Team • Oct 9, 2026
           </div>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct">
-            <span>Fill Google Form</span>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer" class="btn-form-direct" aria-label="Open the Killer's Trail non-PCCOE Google registration form">
+            <span>Register Non-PCCOE Team</span>
             <span>➔</span>
           </a>
         </div>
@@ -2186,7 +2189,7 @@
         <div class="footer-col">
           <h5>Grand Arenas</h5>
           <ul class="footer-links">
-            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer">The Killer's Trail Form ➔</a></li>
+            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1" target="_blank" rel="noopener noreferrer">Killer's Trail Non-PCCOE Form · ₹100 / Team ➔</a></li>
             <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform" target="_blank" rel="noopener noreferrer">Logic Lamp Form ➔</a></li>
             <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform" target="_blank" rel="noopener noreferrer">Promptify Form ➔</a></li>
           </ul>
@@ -2404,15 +2407,16 @@
         subtitle: "THE CRIMSON BLADE",
         categoryLabel: "MYSTERY & DEDUCTION",
         prizePool: "₹25,000",
-        teamSize: "2–4 Detectives",
-        registrationFee: "₹250 / Team",
+        teamSize: "3–4 Detectives",
+        registrationFee: "Non-PCCOE: ₹100 / Team",
+        registrationNote: "This form is for non-PCCOE teams. Register 3–4 detectives for ₹100 per team.",
         venue: "Amphitheatre Dojo // Crime Scene Arena",
         date: "October 9, 2026",
         time: "10:30 AM – 02:30 PM IST",
         formUrl: GOOGLE_FORMS.killersTrail,
         fullDesc: "Step into a shadow-shrouded crime dojo in Neo-Kyoto. When the grand master archivist of the digital scrolls is found silenced, a trail of cryptographic evidence, corrupted memory logs, and cryptic cipher scrolls is left behind. Your detective clan must analyze forensic crime scene clues, cross-examine suspects, and unravel intricate deductive puzzles to identify the culprit before dawn.",
         rules: [
-          "Clans must consist of 2 to 4 registered participants.",
+          "Clans must consist of 3 to 4 registered participants.",
           "Access to external AI models is prohibited during live crime scene deduction.",
           "Evidence scrolls must be inspected carefully; tampering leads to immediate disqualification.",
           "Scoring is weighted: 50% deduction accuracy, 30% speed of reconstruction, 20% oral defense."
@@ -2624,9 +2628,9 @@
 
           <div style="background: rgba(18,24,45,0.85); border: 1px solid rgba(248,165,194,0.3); border-radius: 12px; padding: 24px; text-align: center;">
             <h5 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 8px;">OFFICIAL REGISTRATION</h5>
-            <p style="color: var(--text-soft); font-size: 0.9rem; margin-bottom: 18px;">Click below to open and submit the official Google Registration Form for this event.</p>
+            <p style="color: var(--text-soft); font-size: 0.9rem; margin-bottom: 18px;">${ev.registrationNote || "Click below to open and submit the official Google Registration Form for this event."}</p>
             <a href="${ev.formUrl}" target="_blank" rel="noopener noreferrer" class="btn-pagoda" style="width: 100%; justify-content: center; font-size: 0.95rem; text-decoration: none;">
-              <span>Fill Official Google Form</span>
+              <span>${ev.registrationNote ? "Open Non-PCCOE Google Form" : "Fill Official Google Form"}</span>
               <span>➔</span>
             </a>
           </div>

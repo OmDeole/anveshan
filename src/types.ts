@@ -54,6 +54,5 @@ export interface WaypointIndicatorData {
   isNearby: boolean;
 }
 
-export type WorldEnvironmentType = 'mountain-station' | 'temple';
-
+export type WorldEnvironmentType = 'mountain-station' | 'temple' | 'promptify' | 'logic-lamps';
 

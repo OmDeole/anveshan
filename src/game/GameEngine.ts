@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
 import { Environment, SANCTUARY_EVENTS } from './Environment';
 import { MountainStationEnvironment, STATION_TRAINS } from './MountainStationEnvironment';
+import { PromptifyEnvironment } from './promptify/PromptifyEnvironment';
+import { PROMPTIFY_CONFIG, PROMPTIFY_EVENT_DATA } from './promptify/PromptifyConfig';
+import { LogicLampsEnvironment } from './LogicLamps/LogicLampsEnvironment';
+import { LOGIC_LAMPS_CONFIG, LOGIC_LAMPS_SANCTUARY_DATA } from './LogicLamps/logicLampsConfig';
 import { InputState, SanctuaryEventId, WaypointIndicatorData, TrainData, TrainId, WorldEnvironmentType } from '../types';
 
 export class GameEngine {
@@ -15,6 +19,8 @@ export class GameEngine {
   public currentEnvType: WorldEnvironmentType = 'mountain-station';
   public mountainEnvironment: MountainStationEnvironment | null = null;
   public templeEnvironment: Environment | null = null;
+  public promptifyEnvironment: PromptifyEnvironment | null = null;
+  public logicLampsEnvironment: LogicLampsEnvironment | null = null;
 
   // Game entities
   public samurai: SamuraiCharacter;
@@ -76,6 +82,8 @@ export class GameEngine {
   private lastFacingAngle: number = 0;
   private cameraLookTarget: THREE.Vector3 = new THREE.Vector3();
   private currentCameraPos: THREE.Vector3 = new THREE.Vector3();
+  private targetCameraPos: THREE.Vector3 = new THREE.Vector3();
+  private targetLookAt: THREE.Vector3 = new THREE.Vector3();
   private cameraAngleY: number = 0; // Orbit yaw offset
   private isPointerDown: boolean = false;
   private lastPointerX: number = 0;
@@ -84,6 +92,8 @@ export class GameEngine {
   private initialPinchDist: number | null = null;
   private animFrameId: number | null = null;
   private isRunning: boolean = false;
+  private lastWaypointUpdateAt = 0;
+  private lastWaypointSignature = '';
 
   private disposeSceneObject(object: THREE.Object3D) {
     object.traverse((child) => {
@@ -130,7 +140,7 @@ export class GameEngine {
       powerPreference: 'high-performance',
     });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isMobileView ? 1 : 2));
+    this.renderer.setPixelRatio(this.getRendererPixelRatio());
     this.renderer.shadowMap.enabled = !this.isMobileView;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -141,6 +151,20 @@ export class GameEngine {
     if (initialEnv === 'mountain-station') {
       this.characterPos.set(0, 6.2, -28); // High mountain ridge spawn looking at path & Fuji
       this.mountainEnvironment = new MountainStationEnvironment(this.scene);
+    } else if (initialEnv === 'promptify') {
+      this.characterPos.set(
+        PROMPTIFY_CONFIG.spawnPosition.x,
+        PROMPTIFY_CONFIG.spawnPosition.y,
+        PROMPTIFY_CONFIG.spawnPosition.z
+      );
+      this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+    } else if (initialEnv === 'logic-lamps') {
+      this.characterPos.set(
+        LOGIC_LAMPS_CONFIG.spawnPosition.x,
+        LOGIC_LAMPS_CONFIG.spawnPosition.y,
+        LOGIC_LAMPS_CONFIG.spawnPosition.z
+      );
+      this.logicLampsEnvironment = new LogicLampsEnvironment(this.scene);
     } else {
       this.characterPos.set(-2, 0.7, 4); // Temple sanctuary courtyard spawn
       this.templeEnvironment = new Environment(this.scene, this.activeTempleEventIds);
@@ -154,7 +178,12 @@ export class GameEngine {
     this.setupDirectionGuidance();
     if (initialEnv === 'mountain-station') {
       this.directionRingGroup.visible = false;
+    } else if (initialEnv === 'promptify' || initialEnv === 'logic-lamps') {
+      // The two alternate environments start at the south entrance and lead
+      // forward toward +Z. Keep the initial camera behind that direction.
+      this.cameraAngleY = Math.PI;
     }
+    this.applyEnvironmentQuality();
 
     // Initialize camera position behind character
     const initOffset = this.calculateCameraOffset();
@@ -181,8 +210,39 @@ export class GameEngine {
     // Remove all previous environment meshes from scene
     this.disposeSceneChildren([this.samurai.group, this.directionRingGroup]);
 
-    if (envType === 'temple') {
+    if (this.promptifyEnvironment && envType !== 'promptify') {
+      this.promptifyEnvironment.destroy();
+      this.promptifyEnvironment = null;
+    }
+
+    if (envType === 'promptify') {
       this.mountainEnvironment = null;
+      this.templeEnvironment = null;
+      this.logicLampsEnvironment = null;
+      this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+      this.characterPos.set(
+        PROMPTIFY_CONFIG.spawnPosition.x,
+        PROMPTIFY_CONFIG.spawnPosition.y,
+        PROMPTIFY_CONFIG.spawnPosition.z
+      );
+      this.rebuildDirectionPointers();
+      this.directionRingGroup.visible = true;
+    } else if (envType === 'logic-lamps') {
+      this.mountainEnvironment = null;
+      this.templeEnvironment = null;
+      this.promptifyEnvironment = null;
+      this.logicLampsEnvironment = new LogicLampsEnvironment(this.scene);
+      this.characterPos.set(
+        LOGIC_LAMPS_CONFIG.spawnPosition.x,
+        LOGIC_LAMPS_CONFIG.spawnPosition.y,
+        LOGIC_LAMPS_CONFIG.spawnPosition.z
+      );
+      this.rebuildDirectionPointers();
+      this.directionRingGroup.visible = true;
+    } else if (envType === 'temple') {
+      this.mountainEnvironment = null;
+      this.promptifyEnvironment = null;
+      this.logicLampsEnvironment = null;
       this.activeTempleEventIds = activeTempleEvents;
       this.templeEnvironment = new Environment(this.scene, activeTempleEvents);
       this.characterPos.set(-2, 0.7, 4); // Temple Sanctuary central courtyard
@@ -204,7 +264,7 @@ export class GameEngine {
     this.samurai.setFacingAngle(0);
     this.lastFacingAngle = 0;
     this.samurai.group.position.copy(this.characterPos);
-    this.cameraAngleY = 0;
+    this.cameraAngleY = envType === 'promptify' || envType === 'logic-lamps' ? Math.PI : 0;
     this.cameraPitch = this.getDefaultCameraPitch();
     this.cameraDistance = this.getDefaultCameraDistance();
     this.currentCameraPos.copy(this.characterPos).add(this.calculateCameraOffset());
@@ -223,6 +283,38 @@ export class GameEngine {
     this.input.left = false;
     this.input.right = false;
     this.input.sprint = false;
+    this.applyEnvironmentQuality();
+  }
+
+  private applyEnvironmentQuality() {
+    const isAlternateEnvironment =
+      this.currentEnvType === 'promptify' || this.currentEnvType === 'logic-lamps';
+
+    // Keep the alternate environments at a render resolution that is realistic
+    // for laptop and phone GPUs. The game simulation still runs every frame.
+    this.renderer.setPixelRatio(this.getRendererPixelRatio());
+    this.renderer.shadowMap.enabled = !this.isMobileView && !isAlternateEnvironment;
+
+    // These environments contain many more decorative meshes than the base
+    // sanctuary. Keep their lighting stable by avoiding the expensive shadow
+    // pass; the scene remains lit by its ambient and directional lights.
+    if (!isAlternateEnvironment) return;
+
+    // Point lights are expensive when a scene has many separate meshes. The
+    // alternate environments already use emissive materials for their lantern
+    // glow, so ambient plus directional lighting is enough at gameplay quality.
+    // Disable them on desktop too, not only on mobile.
+    this.scene.traverse((object) => {
+      if (object instanceof THREE.PointLight) {
+        object.visible = false;
+      }
+
+      const mesh = object as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+      }
+    });
   }
 
 
@@ -292,7 +384,14 @@ export class GameEngine {
     const chevronGeo = new THREE.ShapeGeometry(shape);
     chevronGeo.rotateX(-Math.PI / 2); // Lay flat on XZ plane
 
-    this.getActiveSanctuaryEvents().forEach((ev) => {
+    const targetEvents =
+      this.currentEnvType === 'promptify'
+        ? [PROMPTIFY_EVENT_DATA]
+        : this.currentEnvType === 'logic-lamps'
+        ? [LOGIC_LAMPS_SANCTUARY_DATA]
+        : this.getActiveSanctuaryEvents();
+
+    targetEvents.forEach((ev) => {
       const pGroup = new THREE.Group();
 
       const mat = new THREE.MeshBasicMaterial({
@@ -436,8 +535,15 @@ export class GameEngine {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isMobileView ? 1 : 2));
+    this.renderer.setPixelRatio(this.getRendererPixelRatio());
   };
+
+  private getRendererPixelRatio() {
+    const isAlternateEnvironment =
+      this.currentEnvType === 'promptify' || this.currentEnvType === 'logic-lamps';
+    const maxPixelRatio = isAlternateEnvironment ? (this.isMobileView ? 0.85 : 1.25) : this.isMobileView ? 1 : 2;
+    return Math.min(window.devicePixelRatio || 1, maxPixelRatio);
+  }
 
   private onKeyDown = (e: KeyboardEvent) => {
     switch (e.code) {
@@ -688,6 +794,32 @@ export class GameEngine {
             this.characterPos.z = prevZ;
           }
         }
+      } else if (this.currentEnvType === 'promptify') {
+        const isInMarket = (x: number, z: number) =>
+          x >= PROMPTIFY_CONFIG.walkableBounds.minX &&
+          x <= PROMPTIFY_CONFIG.walkableBounds.maxX &&
+          z >= PROMPTIFY_CONFIG.walkableBounds.minZ &&
+          z <= PROMPTIFY_CONFIG.walkableBounds.maxZ;
+
+        if (!isInMarket(this.characterPos.x, this.characterPos.z)) {
+          if (isInMarket(this.characterPos.x, prevZ)) this.characterPos.z = prevZ;
+          else if (isInMarket(prevX, this.characterPos.z)) this.characterPos.x = prevX;
+          else {
+            this.characterPos.x = prevX;
+            this.characterPos.z = prevZ;
+          }
+        }
+      } else if (this.currentEnvType === 'logic-lamps' && this.logicLampsEnvironment) {
+        if (!this.logicLampsEnvironment.isWithinBounds(this.characterPos.x, this.characterPos.z)) {
+          if (this.logicLampsEnvironment.isWithinBounds(this.characterPos.x, prevZ)) {
+            this.characterPos.z = prevZ;
+          } else if (this.logicLampsEnvironment.isWithinBounds(prevX, this.characterPos.z)) {
+            this.characterPos.x = prevX;
+          } else {
+            this.characterPos.x = prevX;
+            this.characterPos.z = prevZ;
+          }
+        }
       } else {
         // Temple Sanctuary Multi-Zone Boundary
         const isInSanctuary = (x: number, z: number) => {
@@ -719,6 +851,20 @@ export class GameEngine {
     if (this.currentEnvType === 'mountain-station') {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -18.0, 18.0);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -35.0, 37.0);
+    } else if (this.currentEnvType === 'promptify') {
+      this.characterPos.x = THREE.MathUtils.clamp(
+        this.characterPos.x,
+        PROMPTIFY_CONFIG.walkableBounds.minX,
+        PROMPTIFY_CONFIG.walkableBounds.maxX
+      );
+      this.characterPos.z = THREE.MathUtils.clamp(
+        this.characterPos.z,
+        PROMPTIFY_CONFIG.walkableBounds.minZ,
+        PROMPTIFY_CONFIG.walkableBounds.maxZ
+      );
+    } else if (this.currentEnvType === 'logic-lamps') {
+      this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -36, 36);
+      this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -28, 28);
     } else {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
@@ -736,6 +882,10 @@ export class GameEngine {
       } else {
         groundHeight = 0.85; // Platform & station ground level
       }
+    } else if (this.currentEnvType === 'promptify') {
+      groundHeight = PROMPTIFY_CONFIG.groundHeight;
+    } else if (this.currentEnvType === 'logic-lamps' && this.logicLampsEnvironment) {
+      groundHeight = this.logicLampsEnvironment.getGroundHeight(this.characterPos.x, this.characterPos.z);
     } else {
       // Temple Sanctuary elevation
       groundHeight = 0.7;
@@ -776,13 +926,13 @@ export class GameEngine {
 
     // 6. Camera Tracking: Elevated Third-Person View with dynamic zoom and pitch
     const cameraOffset = this.calculateCameraOffset();
-    const targetCamPos = new THREE.Vector3().copy(this.characterPos).add(cameraOffset);
+    const targetCamPos = this.targetCameraPos.copy(this.characterPos).add(cameraOffset);
 
     const camLerpSpeed = 8.5 * delta;
     this.currentCameraPos.lerp(targetCamPos, Math.min(camLerpSpeed, 0.95));
     this.camera.position.copy(this.currentCameraPos);
 
-    const targetLookAt = new THREE.Vector3(
+    const targetLookAt = this.targetLookAt.set(
       this.characterPos.x,
       this.characterPos.y + 1.25,
       this.characterPos.z
@@ -810,6 +960,55 @@ export class GameEngine {
         if (this.onNearTrainChanged) {
           this.onNearTrainChanged(foundTrain);
         }
+      }
+    } else if (this.currentEnvType === 'promptify') {
+      const dx = this.characterPos.x - PROMPTIFY_CONFIG.checkpointPosition.x;
+      const dz = this.characterPos.z - PROMPTIFY_CONFIG.checkpointPosition.z;
+      const distance = Math.hypot(dx, dz);
+      const foundNearby: SanctuaryEventId | null = distance < 2.5 ? 'promptify' : null;
+
+      if (foundNearby && this.lastTriggeredEventId !== foundNearby && !this.isEventModalOpen) {
+        this.lastTriggeredEventId = foundNearby;
+        this.onEventTriggered?.(foundNearby);
+      } else if (!foundNearby && distance > 3.6 && this.lastTriggeredEventId === 'promptify') {
+        this.lastTriggeredEventId = null;
+      }
+      if (foundNearby !== this.nearbyEventId) {
+        this.nearbyEventId = foundNearby;
+        this.onNearEventChanged?.(foundNearby);
+      }
+
+      const portalDx = this.characterPos.x - PROMPTIFY_CONFIG.returnGatePosition.x;
+      const portalDz = this.characterPos.z - PROMPTIFY_CONFIG.returnGatePosition.z;
+      const isNearPortal = Math.hypot(portalDx, portalDz) < 3.2;
+      if (isNearPortal !== this.isNearReturnStationPortal) {
+        this.isNearReturnStationPortal = isNearPortal;
+        this.onNearStationPortalChanged?.(isNearPortal);
+      }
+    } else if (this.currentEnvType === 'logic-lamps') {
+      const event = LOGIC_LAMPS_SANCTUARY_DATA;
+      const dx = this.characterPos.x - event.position.x;
+      const dz = this.characterPos.z - event.position.z;
+      const distance = Math.hypot(dx, dz);
+      const foundNearby: SanctuaryEventId | null = distance < 2.5 ? 'logic-lamps' : null;
+
+      if (foundNearby && this.lastTriggeredEventId !== foundNearby && !this.isEventModalOpen) {
+        this.lastTriggeredEventId = foundNearby;
+        this.onEventTriggered?.(foundNearby);
+      } else if (!foundNearby && distance > 3.6 && this.lastTriggeredEventId === 'logic-lamps') {
+        this.lastTriggeredEventId = null;
+      }
+      if (foundNearby !== this.nearbyEventId) {
+        this.nearbyEventId = foundNearby;
+        this.onNearEventChanged?.(foundNearby);
+      }
+
+      const portalDx = this.characterPos.x - LOGIC_LAMPS_CONFIG.stationGatePosition.x;
+      const portalDz = this.characterPos.z - LOGIC_LAMPS_CONFIG.stationGatePosition.z;
+      const isNearPortal = Math.hypot(portalDx, portalDz) < 3.2;
+      if (isNearPortal !== this.isNearReturnStationPortal) {
+        this.isNearReturnStationPortal = isNearPortal;
+        this.onNearStationPortalChanged?.(isNearPortal);
       }
     } else {
       // Temple Sanctuary Proximity Detection
@@ -866,8 +1065,11 @@ export class GameEngine {
       }
     }
 
-    // 8. In-world 3D Direction Guidance Ring (in Temple)
-    if (this.directionRingGroup && this.currentEnvType === 'temple') {
+    // 8. In-world 3D Direction Guidance Ring
+    if (
+      this.directionRingGroup &&
+      (this.currentEnvType === 'temple' || this.currentEnvType === 'promptify' || this.currentEnvType === 'logic-lamps')
+    ) {
       this.directionRingGroup.position.set(
         this.characterPos.x,
         groundHeight + 0.04,
@@ -877,7 +1079,12 @@ export class GameEngine {
       const time = performance.now() * 0.003;
 
       this.waypointPointers.forEach((item, idx) => {
-        const ev = SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
+        const ev =
+          this.currentEnvType === 'promptify'
+            ? PROMPTIFY_EVENT_DATA
+            : this.currentEnvType === 'logic-lamps'
+            ? LOGIC_LAMPS_SANCTUARY_DATA
+            : SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
         if (!ev) return;
 
         const dx = ev.position.x - this.characterPos.x;
@@ -901,14 +1108,19 @@ export class GameEngine {
       });
     }
 
-    // 9. Update Screen-Relative Direction & Distance for HUD Compass
-    if (this.onWaypointsUpdate) {
+    // 9. Update Screen-Relative Direction & Distance for HUD Compass.
+    // The HUD does not need 60 updates per second. Throttling this bridge keeps
+    // React from rerendering the whole app on every simulation tick.
+    const waypointNow = performance.now();
+    const shouldUpdateWaypoints = waypointNow - this.lastWaypointUpdateAt >= 100;
+    if (this.onWaypointsUpdate && shouldUpdateWaypoints) {
       const camFwdX = this.cameraLookTarget.x - this.camera.position.x;
       const camFwdZ = this.cameraLookTarget.z - this.camera.position.z;
       const camYaw = Math.atan2(camFwdX, -camFwdZ);
+      let waypointData: WaypointIndicatorData[];
 
       if (this.currentEnvType === 'mountain-station') {
-        const trainWaypoints: WaypointIndicatorData[] = STATION_TRAINS.map((tr) => {
+        waypointData = STATION_TRAINS.map((tr) => {
           const dx = tr.doorPosition.x - this.characterPos.x;
           const dz = tr.doorPosition.z - this.characterPos.z;
           const distance = Math.hypot(dx, dz);
@@ -930,9 +1142,30 @@ export class GameEngine {
           };
         });
 
-        this.onWaypointsUpdate(trainWaypoints);
+      } else if (this.currentEnvType === 'promptify' || this.currentEnvType === 'logic-lamps') {
+        const event = this.currentEnvType === 'promptify' ? PROMPTIFY_EVENT_DATA : LOGIC_LAMPS_SANCTUARY_DATA;
+        const dx = event.position.x - this.characterPos.x;
+        const dz = event.position.z - this.characterPos.z;
+        const distance = Math.hypot(dx, dz);
+        const eventAngle = Math.atan2(dx, -dz);
+        let diff = (eventAngle - camYaw) * (180 / Math.PI);
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+
+        waypointData = [
+          {
+            id: event.id,
+            name: event.name,
+            kanji: event.kanji,
+            tagline: event.tagline,
+            colorHex: event.colorHex,
+            distance: Math.round(distance),
+            relativeAngleDeg: Math.round(diff),
+            isNearby: distance <= 2.5,
+          },
+        ];
       } else {
-        const waypointsData: WaypointIndicatorData[] = this.getActiveSanctuaryEvents().map((event) => {
+        waypointData = this.getActiveSanctuaryEvents().map((event) => {
           const dx = event.position.x - this.characterPos.x;
           const dz = event.position.z - this.characterPos.z;
           const distance = Math.hypot(dx, dz);
@@ -954,7 +1187,17 @@ export class GameEngine {
           };
         });
 
-        this.onWaypointsUpdate(waypointsData);
+      }
+
+      const waypointSignature = waypointData
+        .map((item) => `${item.id}:${item.distance}:${item.relativeAngleDeg}:${item.isNearby}`)
+        .join('|');
+      if (waypointSignature !== this.lastWaypointSignature) {
+        this.lastWaypointSignature = waypointSignature;
+        this.lastWaypointUpdateAt = waypointNow;
+        this.onWaypointsUpdate(waypointData);
+      } else {
+        this.lastWaypointUpdateAt = waypointNow;
       }
     }
   }
@@ -968,10 +1211,17 @@ export class GameEngine {
 
     if (this.currentEnvType === 'mountain-station' && this.mountainEnvironment) {
       this.mountainEnvironment.update(delta);
+    } else if (this.currentEnvType === 'promptify' && this.promptifyEnvironment) {
+      this.promptifyEnvironment.update(delta, this.characterPos);
+    } else if (this.currentEnvType === 'logic-lamps' && this.logicLampsEnvironment) {
+      this.logicLampsEnvironment.update(delta, this.characterPos);
     } else if (this.currentEnvType === 'temple' && this.templeEnvironment) {
       this.templeEnvironment.update(delta);
     }
 
+    // Render every animation frame. Alternate environments previously forced a
+    // 30 FPS cap, which made movement visibly stutter even when the GPU had
+    // enough headroom after the quality reductions above.
     this.renderer.render(this.scene, this.camera);
     this.animFrameId = requestAnimationFrame(this.tick);
   };
@@ -995,6 +1245,8 @@ export class GameEngine {
   public destroy() {
     this.stop();
     this.removeEventListeners();
+    this.promptifyEnvironment?.destroy();
+    this.promptifyEnvironment = null;
     this.disposeSceneChildren();
     this.samurai.group.clear();
     this.directionRingGroup.clear();
