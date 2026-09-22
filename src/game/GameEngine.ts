@@ -69,10 +69,11 @@ export class GameEngine {
   private moveSpeed: number = 4.8;
   private sprintMultiplier: number = 1.65;
 
-  // Camera settings (Elevated Third-Person Trailing View)
-  // Distance from character: default 7.5, zoomable from 2.2 (close-up) to 18.0 (wide panorama)
+  // Camera settings (adaptive elevated third-person trailing view)
   private cameraDistance: number = 7.2;
   private cameraPitch: number = 0.38; // Vertical tilt angle in radians
+  private isMobileView: boolean = false;
+  private lastFacingAngle: number = 0;
   private cameraLookTarget: THREE.Vector3 = new THREE.Vector3();
   private currentCameraPos: THREE.Vector3 = new THREE.Vector3();
   private cameraAngleY: number = 0; // Orbit yaw offset
@@ -88,22 +89,25 @@ export class GameEngine {
     this.container = container;
     this.currentEnvType = initialEnv;
     this.clock = new THREE.Clock();
+    this.isMobileView = this.detectMobileView();
+    this.cameraDistance = this.getDefaultCameraDistance();
+    this.cameraPitch = this.getDefaultCameraPitch();
 
     // 1. Scene setup
     this.scene = new THREE.Scene();
 
-    // 2. Camera setup - Field of view 55 for cinematic depth
+    // 2. Camera setup - wider on phone so the avatar and path stay readable in portrait
     const aspect = container.clientWidth / container.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(52, aspect, 0.1, 800);
+    this.camera = new THREE.PerspectiveCamera(this.getDefaultCameraFov(), aspect, 0.1, 800);
 
     // 3. Renderer setup
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: !this.isMobileView,
       powerPreference: 'high-performance',
     });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isMobileView ? 1 : 2));
+    this.renderer.shadowMap.enabled = !this.isMobileView;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
@@ -180,9 +184,11 @@ export class GameEngine {
     this.verticalVelocity = 0;
     this.samurai.isGrounded = true;
     this.samurai.setFacingAngle(0);
+    this.lastFacingAngle = 0;
     this.samurai.group.position.copy(this.characterPos);
     this.cameraAngleY = 0;
-    this.cameraPitch = 0.38;
+    this.cameraPitch = this.getDefaultCameraPitch();
+    this.cameraDistance = this.getDefaultCameraDistance();
     this.currentCameraPos.copy(this.characterPos).add(this.calculateCameraOffset());
     this.camera.position.copy(this.currentCameraPos);
     this.cameraLookTarget.set(this.characterPos.x, this.characterPos.y + 1.25, this.characterPos.z);
@@ -352,13 +358,67 @@ export class GameEngine {
     window.removeEventListener('pointerup', this.onPointerUp);
   }
 
+  private detectMobileView(): boolean {
+    const hasCoarsePointer = typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches;
+    return window.innerWidth <= 768 || hasCoarsePointer;
+  }
+
+  private getDefaultCameraDistance(): number {
+    return this.isMobileView ? 5.8 : 7.2;
+  }
+
+  private getDefaultCameraPitch(): number {
+    return this.isMobileView ? 0.44 : 0.38;
+  }
+
+  private getDefaultCameraFov(): number {
+    return this.isMobileView ? 58 : 52;
+  }
+
+  private getCameraDistanceLimits(): [number, number] {
+    return this.isMobileView ? [4.6, 10.5] : [2.5, 16.0];
+  }
+
+  private normalizeAngle(angle: number): number {
+    return THREE.MathUtils.euclideanModulo(angle + Math.PI, Math.PI * 2) - Math.PI;
+  }
+
+  private clampCameraDistance(distance: number): number {
+    const [min, max] = this.getCameraDistanceLimits();
+    return THREE.MathUtils.clamp(distance, min, max);
+  }
+
+  private refreshViewportCameraProfile() {
+    const previousDefaultDistance = this.getDefaultCameraDistance();
+    const previousDefaultPitch = this.getDefaultCameraPitch();
+    const wasMobileView = this.isMobileView;
+
+    this.isMobileView = this.detectMobileView();
+    this.camera.fov = this.getDefaultCameraFov();
+
+    if (wasMobileView !== this.isMobileView) {
+      if (Math.abs(this.cameraDistance - previousDefaultDistance) < 0.1) {
+        this.cameraDistance = this.getDefaultCameraDistance();
+      } else {
+        this.cameraDistance = this.clampCameraDistance(this.cameraDistance);
+      }
+
+      if (Math.abs(this.cameraPitch - previousDefaultPitch) < 0.05) {
+        this.cameraPitch = this.getDefaultCameraPitch();
+      }
+    }
+  }
+
   private onResize = () => {
     if (!this.container) return;
+    this.refreshViewportCameraProfile();
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isMobileView ? 1 : 2));
   };
 
   private onKeyDown = (e: KeyboardEvent) => {
@@ -453,8 +513,12 @@ export class GameEngine {
       const dy = pts[0].y - pts[1].y;
       const currentPinchDist = Math.sqrt(dx * dx + dy * dy);
       const pinchDelta = (this.initialPinchDist - currentPinchDist) * 0.025;
-      this.cameraDistance = THREE.MathUtils.clamp(this.cameraDistance + pinchDelta, 2.5, 16.0);
+      this.cameraDistance = this.clampCameraDistance(this.cameraDistance + pinchDelta);
       this.initialPinchDist = currentPinchDist;
+      return;
+    }
+
+    if (this.isMobileView && e.pointerType === 'touch') {
       return;
     }
 
@@ -492,21 +556,21 @@ export class GameEngine {
   private onWheel = (e: WheelEvent) => {
     // Zoom close in on the character (close third person 2.5) or pull out wide (16.0)
     const zoomDelta = e.deltaY * 0.008;
-    this.cameraDistance = THREE.MathUtils.clamp(this.cameraDistance + zoomDelta, 2.5, 16.0);
+    this.cameraDistance = this.clampCameraDistance(this.cameraDistance + zoomDelta);
   };
 
   public zoomIn() {
-    this.cameraDistance = THREE.MathUtils.clamp(this.cameraDistance - 1.6, 2.5, 16.0);
+    this.cameraDistance = this.clampCameraDistance(this.cameraDistance - 1.6);
   }
 
   public zoomOut() {
-    this.cameraDistance = THREE.MathUtils.clamp(this.cameraDistance + 1.6, 2.5, 16.0);
+    this.cameraDistance = this.clampCameraDistance(this.cameraDistance + 1.6);
   }
 
   public resetCameraBehind() {
-    this.cameraAngleY = 0;
-    this.cameraPitch = 0.38;
-    this.cameraDistance = 7.2;
+    this.cameraAngleY = this.normalizeAngle(this.lastFacingAngle);
+    this.cameraPitch = this.getDefaultCameraPitch();
+    this.cameraDistance = this.getDefaultCameraDistance();
   }
 
   /**
@@ -529,27 +593,62 @@ export class GameEngine {
       inputZ /= rawLen;
     }
 
-    const isMoving = rawLen > 0.05;
-    const speed = (this.input.sprint ? this.moveSpeed * this.sprintMultiplier : this.moveSpeed) * (rawLen > 1 ? 1 : rawLen);
+    let isMoving = rawLen > 0.05;
+    let animationSpeed = 0;
+    let movedThisFrame = false;
+    const prevX = this.characterPos.x;
+    const prevZ = this.characterPos.z;
+    const baseMoveSpeed = this.input.sprint ? this.moveSpeed * this.sprintMultiplier : this.moveSpeed;
 
-    // 2. Camera-relative movement
-    if (isMoving) {
-      // Calculate angle relative to camera view
+    // 2. Movement controls
+    if (this.isMobileView) {
+      // Phone mode: joystick left/right steers the samurai, while the camera stays locked behind him.
+      const turnInput = inputX;
+      const forwardAmount = THREE.MathUtils.clamp(-inputZ, -1, 1);
+      const isTurning = Math.abs(turnInput) > 0.05;
+      const isTranslating = Math.abs(forwardAmount) > 0.05;
+
+      if (isTurning) {
+        const turnSpeed = (this.input.sprint ? 3.4 : 2.7) * delta;
+        this.cameraAngleY = this.normalizeAngle(this.cameraAngleY - turnInput * turnSpeed);
+      }
+
+      if (isTurning || isTranslating) {
+        this.lastFacingAngle = this.normalizeAngle(this.cameraAngleY);
+        this.samurai.setFacingAngle(this.lastFacingAngle);
+      }
+
+      isMoving = isTranslating;
+      animationSpeed = baseMoveSpeed * Math.abs(forwardAmount);
+
+      if (isTranslating) {
+        const moveAngle = this.cameraAngleY - Math.PI;
+        const moveDirX = Math.sin(moveAngle);
+        const moveDirZ = Math.cos(moveAngle);
+
+        this.characterPos.x += moveDirX * baseMoveSpeed * forwardAmount * delta;
+        this.characterPos.z += moveDirZ * baseMoveSpeed * forwardAmount * delta;
+        movedThisFrame = true;
+      }
+    } else if (isMoving) {
+      // Desktop mode: free camera orbit with camera-relative movement.
+      const speed = baseMoveSpeed * (rawLen > 1 ? 1 : rawLen);
       const moveAngle = Math.atan2(inputX, inputZ) + this.cameraAngleY;
-      const targetFacing = moveAngle + Math.PI; // Face forward along direction
+      const targetFacing = this.normalizeAngle(moveAngle + Math.PI);
+      this.lastFacingAngle = targetFacing;
       this.samurai.setFacingAngle(targetFacing);
-
-      // Move in world space with boundary check
-      const prevX = this.characterPos.x;
-      const prevZ = this.characterPos.z;
 
       const moveDirX = Math.sin(moveAngle);
       const moveDirZ = Math.cos(moveAngle);
 
       this.characterPos.x += moveDirX * speed * delta;
       this.characterPos.z += moveDirZ * speed * delta;
+      animationSpeed = speed;
+      movedThisFrame = true;
+    }
 
-      // 3. Multi-Zone World Boundaries & Collision
+    // 3. Multi-Zone World Boundaries & Collision
+    if (movedThisFrame) {
       if (this.currentEnvType === 'mountain-station') {
         const isInMountainStation = (x: number, z: number) => {
           // High mountain ridge spawn area
@@ -652,7 +751,7 @@ export class GameEngine {
     this.samurai.update(
       delta,
       isMoving,
-      speed,
+      animationSpeed,
       this.input.sprint,
       !this.samurai.isGrounded
     );

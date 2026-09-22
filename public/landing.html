@@ -236,80 +236,6 @@
     }
 
     /* ==========================================================
-       TOP RIGHT FLOATING OVERLAY: "REGISTER HERE" BUTTON
-       Persistent across the entire site
-       ========================================================== */
-    .fixed-register-overlay {
-      position: fixed;
-      top: 18px;
-      right: 22px;
-      z-index: 10001;
-      display: flex;
-      align-items: center;
-    }
-
-    .btn-register-fixed {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #e63946 0%, #b51726 100%);
-      color: #ffffff;
-      font-family: var(--font-editorial);
-      font-size: 0.88rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-decoration: none;
-      border: 1.5px solid rgba(255, 209, 148, 0.6);
-      border-radius: 14px 4px 14px 4px;
-      cursor: pointer;
-      box-shadow: 0 8px 28px rgba(230, 57, 70, 0.65), 0 0 25px rgba(255, 209, 148, 0.4);
-      transition: var(--transition);
-      animation: registerPulse 3s infinite ease-in-out;
-      user-select: none;
-    }
-
-    @keyframes registerPulse {
-      0%, 100% {
-        box-shadow: 0 6px 24px rgba(230, 57, 70, 0.65), 0 0 20px rgba(248, 165, 194, 0.3);
-        transform: translateY(0);
-      }
-      50% {
-        box-shadow: 0 10px 34px rgba(230, 57, 70, 0.9), 0 0 32px rgba(255, 209, 148, 0.55);
-        transform: translateY(-2px);
-      }
-    }
-
-    .btn-register-fixed:hover {
-      background: linear-gradient(135deg, #ff4757 0%, #c01323 100%);
-      border-color: #ffd194;
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: 0 12px 40px rgba(230, 57, 70, 0.9), 0 0 35px rgba(255, 209, 148, 0.7);
-    }
-
-    .btn-register-fixed .pulse-beacon {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ffd194;
-      box-shadow: 0 0 10px #ffd194;
-    }
-
-    @media (max-width: 768px) {
-      .fixed-register-overlay {
-        top: 14px;
-        right: 58px;
-      }
-      .btn-register-fixed {
-        padding: 8px 16px;
-        font-size: 0.76rem;
-        gap: 6px;
-      }
-    }
-
-    /* ==========================================================
        1. UNIFIED SLEEK TOP NAVIGATION BAR
        ========================================================== */
     .navbar {
@@ -337,13 +263,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-right: 170px;
-    }
-
-    @media (max-width: 768px) {
-      .navbar-container {
-        padding-right: 130px;
-      }
+      gap: 24px;
     }
 
     /* Brand Logo: Torii Gate & Pagoda Silhouette + Red Hanko Seal */
@@ -353,6 +273,7 @@
       gap: 14px;
       text-decoration: none;
       color: var(--text-white);
+      min-width: 0;
     }
 
     .brand-emblem {
@@ -463,6 +384,12 @@
       gap: 14px;
     }
 
+    .nav-register-button {
+      padding: 10px 18px;
+      font-size: 0.76rem;
+      white-space: nowrap;
+    }
+
     .btn-pagoda {
       position: relative;
       display: inline-flex;
@@ -562,6 +489,10 @@
 
       .mobile-nav-toggle {
         display: flex;
+      }
+
+      .nav-register-button {
+        display: none;
       }
 
       .mobile-drawer {
@@ -676,6 +607,14 @@
       text-align: center;
       max-width: 960px;
       margin: 0 auto;
+    }
+
+    .hero-event-logo {
+      display: block;
+      width: clamp(132px, 20vw, 210px);
+      height: auto;
+      margin: 0 auto 16px;
+      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 22px rgba(230, 57, 70, 0.28));
     }
 
     .hero-dawn-badge {
@@ -1528,17 +1467,6 @@
   <canvas id="sakura-canvas" aria-hidden="true"></canvas>
 
   <!-- ==========================================================
-       TOP RIGHT PERSISTENT OVERLAY: "REGISTER HERE" BUTTON
-       ========================================================== -->
-  <aside class="fixed-register-overlay" aria-label="Registration Action">
-    <button class="btn-register-fixed" id="fixedRegisterBtn" onclick="openRegistrationHub()" aria-haspopup="dialog">
-      <span class="pulse-beacon" aria-hidden="true"></span>
-      <span>Register Here</span>
-      <span aria-hidden="true">⛩️</span>
-    </button>
-  </aside>
-
-  <!-- ==========================================================
        1. UNIFIED SLEEK TOP NAVIGATION BAR
        ========================================================== -->
   <header class="navbar" id="navbar">
@@ -1599,6 +1527,10 @@
       </nav>
 
       <div class="nav-actions">
+        <button class="btn-pagoda nav-register-button" onclick="openRegistrationHub()" aria-haspopup="dialog">
+          <span>Register Here</span>
+          <span aria-hidden="true">⛩️</span>
+        </button>
         <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Menu" aria-expanded="false">
           <span></span>
           <span></span>
@@ -1783,6 +1715,8 @@
       </div>
 
       <div class="container hero-content">
+        <img class="hero-event-logo" src="/assets/anveshan-logo.png" alt="ANVESHAN 3.0">
+
         <div class="hero-dawn-badge">
           <span class="dawn-dot"></span>
           <span>OCTOBER 9 - 10, 2026 // PCCOE ANNUAL TECHFEST</span>

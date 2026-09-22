@@ -74,6 +74,25 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({
     }
   };
 
+  const handleActionPointerDown = (
+    e: React.PointerEvent<HTMLButtonElement>,
+    action: () => void
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
+
+  const handleActionKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    action: () => void
+  ) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   // Keyboard navigation fallback listener for visual joystick reflection
   useEffect(() => {
     const handleKeyEnd = () => {
@@ -142,12 +161,14 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({
           <button
             id="sprint-button"
             type="button"
-            onClick={() => onSprintToggle(!isSprinting)}
+            onPointerDown={(e) => handleActionPointerDown(e, () => onSprintToggle(!isSprinting))}
+            onKeyDown={(e) => handleActionKeyDown(e, () => onSprintToggle(!isSprinting))}
             className={`w-14 h-14 rounded-full flex flex-col items-center justify-center border text-xs font-semibold backdrop-blur-md shadow-xl transition-all active:scale-95 ${
               isSprinting
                 ? 'bg-amber-500/80 border-amber-300 text-stone-900 shadow-amber-500/40'
                 : 'bg-black/40 border-white/20 text-white/80 hover:border-white/40'
             }`}
+            style={{ touchAction: 'manipulation' }}
           >
             <span className="text-base leading-none">疾</span>
             <span className="text-[9px] tracking-wider uppercase opacity-80">Run</span>
@@ -159,8 +180,10 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({
           <button
             id="jump-button"
             type="button"
-            onClick={onJump}
+            onPointerDown={(e) => handleActionPointerDown(e, onJump)}
+            onKeyDown={(e) => handleActionKeyDown(e, onJump)}
             className="w-16 h-16 rounded-full flex flex-col items-center justify-center border bg-red-600/80 hover:bg-red-500/90 border-red-300/60 text-white font-bold backdrop-blur-md shadow-xl shadow-red-950/50 active:scale-95 transition-all"
+            style={{ touchAction: 'manipulation' }}
           >
             <span className="text-lg leading-none">跳</span>
             <span className="text-[10px] tracking-wider uppercase text-red-100/90">Jump</span>

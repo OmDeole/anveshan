@@ -122,7 +122,7 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
         key={isMobile ? 'mobile' : 'desktop'}
         className="w-full h-full object-cover cursor-pointer"
         playsInline
-        preload="auto"
+          preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleVideoEnded}
         onClick={() => {
@@ -133,12 +133,12 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
       >
         {isMobile ? (
           <>
-            <source src="/mobile_intro.mp4" type="video/mp4" />
+            <source src="/mobile_intro_fast.mp4" type="video/mp4" />
             <source src="/mobile_intro.mov" type="video/quicktime" />
           </>
         ) : (
           <>
-            <source src="/japvidanveshan.mp4" type="video/mp4" />
+            <source src="/japvidanveshan_fast.mp4" type="video/mp4" />
             <source src="/japvidanveshan.mov" type="video/quicktime" />
           </>
         )}

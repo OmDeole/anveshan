@@ -35,7 +35,7 @@ export const ScrollExperience: React.FC<ScrollExperienceProps> = ({ onComplete }
 
   const getFrameUrl = useCallback((index: number) => {
     const pad = String(index).padStart(4, '0');
-    return `/scroll_frames/frame_${pad}.jpg`;
+    return `/scroll_frames_fast/frame_${pad}.webp`;
   }, []);
 
   // Draw a frame onto the canvas maintaining cover aspect ratio
@@ -90,48 +90,62 @@ export const ScrollExperience: React.FC<ScrollExperienceProps> = ({ onComplete }
     drawFrame(frameIdx);
   }, [drawFrame]);
 
-  // Preload frames progressively
+  // Load the first frame and sparse keyframes immediately. Fill in the remaining
+  // frames during idle time so startup does not compete with the game transition.
   useEffect(() => {
     let isCancelled = false;
-
-    // 1. Load initial frame immediately
-    const firstImg = new Image();
-    firstImg.src = getFrameUrl(1);
-    firstImg.onload = () => {
-      if (isCancelled) return;
-      imagesCacheRef.current.set(1, firstImg);
-      lastDrawnImageRef.current = firstImg;
-      handleResize();
+    const requestedFrames = new Set<number>();
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
     };
+    let idleId: number | null = null;
 
-    // 2. Load keyframes every 4th frame first for rapid scrubbing response
-    const loadKeyframes = async () => {
-      for (let i = 2; i <= TOTAL_FRAMES; i += 4) {
-        if (isCancelled) break;
-        const img = new Image();
-        img.src = getFrameUrl(i);
-        img.onload = () => {
-          if (!isCancelled) imagesCacheRef.current.set(i, img);
-        };
-      }
+    const loadFrame = (index: number, priority: 'high' | 'low') => {
+      if (requestedFrames.has(index)) return;
+      requestedFrames.add(index);
 
-      // 3. Fill in all remaining intermediate frames
-      for (let i = 1; i <= TOTAL_FRAMES; i++) {
-        if (isCancelled) break;
-        if (!imagesCacheRef.current.has(i)) {
-          const img = new Image();
-          img.src = getFrameUrl(i);
-          img.onload = () => {
-            if (!isCancelled) imagesCacheRef.current.set(i, img);
-          };
+      const img = new Image();
+      img.decoding = 'async';
+      img.fetchPriority = priority;
+      img.src = getFrameUrl(index);
+      img.onload = () => {
+        if (isCancelled) return;
+        imagesCacheRef.current.set(index, img);
+        if (index === 1) {
+          lastDrawnImageRef.current = img;
+          handleResize();
         }
-      }
+      };
     };
 
-    loadKeyframes();
+    loadFrame(1, 'high');
+    for (let i = 9; i <= TOTAL_FRAMES; i += 8) {
+      loadFrame(i, 'high');
+    }
+
+    let nextFrame = 2;
+    const loadNextIdleFrame = () => {
+      if (isCancelled) return;
+      while (nextFrame <= TOTAL_FRAMES && requestedFrames.has(nextFrame)) nextFrame += 1;
+      if (nextFrame > TOTAL_FRAMES) return;
+      loadFrame(nextFrame, 'low');
+      nextFrame += 1;
+      idleId = idleWindow.requestIdleCallback
+        ? idleWindow.requestIdleCallback(loadNextIdleFrame, { timeout: 500 })
+        : window.setTimeout(loadNextIdleFrame, 50);
+    };
+
+    idleId = idleWindow.requestIdleCallback
+      ? idleWindow.requestIdleCallback(loadNextIdleFrame, { timeout: 500 })
+      : window.setTimeout(loadNextIdleFrame, 50);
 
     return () => {
       isCancelled = true;
+      if (idleId !== null) {
+        if (idleWindow.cancelIdleCallback) idleWindow.cancelIdleCallback(idleId);
+        else window.clearTimeout(idleId);
+      }
     };
   }, [getFrameUrl, handleResize]);
 
