@@ -59,10 +59,24 @@ export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
     onComplete();
   };
 
+  // 3. Failsafe: if video pauses or stalls near the end, auto-finish
+  useEffect(() => {
+    const failsafe = setTimeout(() => {
+      handleFinish();
+    }, 5500);
+    return () => clearTimeout(failsafe);
+  }, []);
+
   const handleTimeUpdate = () => {
     if (videoRef.current && videoRef.current.duration) {
-      const pct = Math.min(videoRef.current.currentTime / videoRef.current.duration, 1.0);
+      const cur = videoRef.current.currentTime;
+      const dur = videoRef.current.duration;
+      const pct = Math.min(cur / dur, 1.0);
       setProgress(pct);
+
+      if (cur >= dur - 0.25 || pct >= 0.98) {
+        handleFinish();
+      }
     }
   };
 
@@ -85,6 +99,13 @@ export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
         className="absolute inset-0 w-full h-full object-cover"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleFinish}
+        onPause={() => {
+          if (videoRef.current && videoRef.current.duration) {
+            if (videoRef.current.currentTime >= videoRef.current.duration - 0.5) {
+              handleFinish();
+            }
+          }
+        }}
         onError={() => {
           console.warn('Failed to load transition video, finishing cutscene.');
           handleFinish();

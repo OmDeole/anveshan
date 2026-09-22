@@ -88,20 +88,27 @@ export default function App() {
   };
 
   const handleBoardingComplete = () => {
+    const isLogicLamps = boardingTrain?.id === 'sandip';
+    const nextPhase: AppPhase = isLogicLamps ? 'logic-lamps' : 'temple';
+
     setNearbyTrain(null);
+    setCurrentPhase(nextPhase);
+
     if (engineRef.current) {
       engineRef.current.setEventModalOpen(false);
-      if (boardingTrain?.id === 'sandip') {
-        setCurrentPhase('logic-lamps');
-        engineRef.current.switchEnvironment('logic-lamps');
-      } else {
-        setCurrentPhase('temple');
-        // When the user boards the train of the killer's trail, remove the other two events from the temple!
-        let activeEventsForTrain: SanctuaryEventId[] = ['tech-treasure-hunt'];
-        if (boardingTrain?.id === 'arya') {
-          activeEventsForTrain = ['promptify'];
+      try {
+        if (isLogicLamps) {
+          engineRef.current.switchEnvironment('logic-lamps');
+        } else {
+          // When the user boards the train of the killer's trail, remove the other two events from the temple!
+          let activeEventsForTrain: SanctuaryEventId[] = ['tech-treasure-hunt'];
+          if (boardingTrain?.id === 'arya') {
+            activeEventsForTrain = ['promptify'];
+          }
+          engineRef.current.switchEnvironment('temple', false, activeEventsForTrain);
         }
-        engineRef.current.switchEnvironment('temple', false, activeEventsForTrain);
+      } catch (err) {
+        console.error('Failed to switch environment on train arrival:', err);
       }
     }
   };
@@ -125,13 +132,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPhase, nearbyTrain, nearbyEvent, activeEvent, isNearStationPortal]);
 
-  // Initialize 3D game engine ONCE and keep it alive.
-  // Only destroy when leaving to 'cinematic' (unmount scenario).
-  // 'boarding' phase keeps the engine running behind the cutscene.
+  // Initialize 3D game engine ONCE and keep it alive across all gameplay phases.
   useEffect(() => {
-    // Skip during cinematic, boarding, and if container isn't ready
-    if (currentPhase === 'cinematic' || currentPhase === 'boarding' || !containerRef.current) return;
-    if (engineRef.current) return; // already initialized — engine stays alive across boarding
+    // Skip during cinematic or if container isn't ready
+    if (currentPhase === 'cinematic' || !containerRef.current) return;
+    if (engineRef.current) return; // already initialized — keep engine alive across boarding cutscene
 
     setIsLoading(true);
     setGameError(null);
@@ -181,12 +186,17 @@ export default function App() {
     };
 
     setIsLoading(false);
-
-    return () => {
-      engine.destroy();
-      engineRef.current = null;
-    };
   }, [currentPhase]);
+
+  // Clean up 3D engine only on component unmount
+  useEffect(() => {
+    return () => {
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+      }
+    };
+  }, []);
 
 
   // Joystick move handler
