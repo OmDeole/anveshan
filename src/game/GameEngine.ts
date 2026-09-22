@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
 import { Environment, SANCTUARY_EVENTS } from './Environment';
 import { MountainStationEnvironment, STATION_TRAINS } from './MountainStationEnvironment';
+import { LogicLampsEnvironment } from './LogicLamps/LogicLampsEnvironment';
+import { LOGIC_LAMPS_CONFIG, LOGIC_LAMPS_SANCTUARY_DATA } from './LogicLamps/logicLampsConfig';
 import { InputState, SanctuaryEventId, WaypointIndicatorData, TrainData, TrainId, WorldEnvironmentType } from '../types';
 
 export class GameEngine {
@@ -15,6 +17,7 @@ export class GameEngine {
   public currentEnvType: WorldEnvironmentType = 'mountain-station';
   public mountainEnvironment: MountainStationEnvironment | null = null;
   public templeEnvironment: Environment | null = null;
+  public logicLampsEnvironment: LogicLampsEnvironment | null = null;
 
   // Game entities
   public samurai: SamuraiCharacter;
@@ -34,6 +37,9 @@ export class GameEngine {
   public onNearStationPortalChanged: ((isNear: boolean) => void) | null = null;
 
   public getActiveSanctuaryEvents() {
+    if (this.currentEnvType === 'logic-lamps') {
+      return [LOGIC_LAMPS_SANCTUARY_DATA];
+    }
     return SANCTUARY_EVENTS.filter((e) => this.activeTempleEventIds.includes(e.id));
   }
 
@@ -141,6 +147,14 @@ export class GameEngine {
     if (initialEnv === 'mountain-station') {
       this.characterPos.set(0, 6.2, -28); // High mountain ridge spawn looking at path & Fuji
       this.mountainEnvironment = new MountainStationEnvironment(this.scene);
+    } else if (initialEnv === 'logic-lamps') {
+      this.characterPos.set(
+        LOGIC_LAMPS_CONFIG.spawnPosition.x,
+        LOGIC_LAMPS_CONFIG.spawnPosition.y,
+        LOGIC_LAMPS_CONFIG.spawnPosition.z
+      );
+      this.activeTempleEventIds = ['logic-lamps'];
+      this.logicLampsEnvironment = new LogicLampsEnvironment(this.scene);
     } else {
       this.characterPos.set(-2, 0.7, 4); // Temple sanctuary courtyard spawn
       this.templeEnvironment = new Environment(this.scene, this.activeTempleEventIds);
@@ -183,13 +197,27 @@ export class GameEngine {
 
     if (envType === 'temple') {
       this.mountainEnvironment = null;
+      this.logicLampsEnvironment = null;
       this.activeTempleEventIds = activeTempleEvents;
       this.templeEnvironment = new Environment(this.scene, activeTempleEvents);
       this.characterPos.set(-2, 0.7, 4); // Temple Sanctuary central courtyard
       this.rebuildDirectionPointers();
       this.directionRingGroup.visible = true;
+    } else if (envType === 'logic-lamps') {
+      this.mountainEnvironment = null;
+      this.templeEnvironment = null;
+      this.activeTempleEventIds = ['logic-lamps'];
+      this.logicLampsEnvironment = new LogicLampsEnvironment(this.scene);
+      this.characterPos.set(
+        LOGIC_LAMPS_CONFIG.spawnPosition.x,
+        LOGIC_LAMPS_CONFIG.spawnPosition.y,
+        LOGIC_LAMPS_CONFIG.spawnPosition.z
+      );
+      this.rebuildDirectionPointers();
+      this.directionRingGroup.visible = true;
     } else {
       this.templeEnvironment = null;
+      this.logicLampsEnvironment = null;
       this.mountainEnvironment = new MountainStationEnvironment(this.scene);
       if (spawnAtStation) {
         this.characterPos.set(0, 0.85, 2.0); // Station platform concourse directly facing the 3 trains
@@ -262,11 +290,19 @@ export class GameEngine {
   }
 
   /**
-   * Ring the sacred Bonshō temple bells in the Temple Sanctuary
+   * Ring the sacred Bonshō temple bells in the Temple Sanctuary or trigger Lanterns in Logic Lamps
    */
   public ringTempleBells() {
     if (this.templeEnvironment) {
       this.templeEnvironment.ringBells();
+    } else if (this.logicLampsEnvironment) {
+      this.logicLampsEnvironment.triggerLanternRelease();
+    }
+  }
+
+  public triggerLanternRelease() {
+    if (this.logicLampsEnvironment) {
+      this.logicLampsEnvironment.triggerLanternRelease();
     }
   }
 
@@ -688,6 +724,19 @@ export class GameEngine {
             this.characterPos.z = prevZ;
           }
         }
+      } else if (this.currentEnvType === 'logic-lamps') {
+        if (this.logicLampsEnvironment) {
+          if (!this.logicLampsEnvironment.isWithinBounds(this.characterPos.x, this.characterPos.z)) {
+            if (this.logicLampsEnvironment.isWithinBounds(this.characterPos.x, prevZ)) {
+              this.characterPos.z = prevZ;
+            } else if (this.logicLampsEnvironment.isWithinBounds(prevX, this.characterPos.z)) {
+              this.characterPos.x = prevX;
+            } else {
+              this.characterPos.x = prevX;
+              this.characterPos.z = prevZ;
+            }
+          }
+        }
       } else {
         // Temple Sanctuary Multi-Zone Boundary
         const isInSanctuary = (x: number, z: number) => {
@@ -719,6 +768,9 @@ export class GameEngine {
     if (this.currentEnvType === 'mountain-station') {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -18.0, 18.0);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -35.0, 37.0);
+    } else if (this.currentEnvType === 'logic-lamps') {
+      this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, LOGIC_LAMPS_CONFIG.bounds.minX, LOGIC_LAMPS_CONFIG.bounds.maxX);
+      this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, LOGIC_LAMPS_CONFIG.bounds.minZ, LOGIC_LAMPS_CONFIG.bounds.maxZ);
     } else {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
@@ -735,6 +787,12 @@ export class GameEngine {
         groundHeight = 0.85 + t * (6.1 - 0.85);
       } else {
         groundHeight = 0.85; // Platform & station ground level
+      }
+    } else if (this.currentEnvType === 'logic-lamps') {
+      if (this.logicLampsEnvironment) {
+        groundHeight = this.logicLampsEnvironment.getGroundHeight(this.characterPos.x, this.characterPos.z);
+      } else {
+        groundHeight = 1.8;
       }
     } else {
       // Temple Sanctuary elevation
@@ -854,9 +912,12 @@ export class GameEngine {
         }
       }
 
-      // Check proximity to Return-to-Station Departure Gate (at x: -2.0, z: -10.0)
-      const portalDx = this.characterPos.x - -2.0;
-      const portalDz = this.characterPos.z - -10.0;
+      // Check proximity to Return-to-Station Departure Gate
+      const portalTarget = this.currentEnvType === 'logic-lamps'
+        ? LOGIC_LAMPS_CONFIG.stationGatePosition
+        : { x: -2.0, z: -10.0 };
+      const portalDx = this.characterPos.x - portalTarget.x;
+      const portalDz = this.characterPos.z - portalTarget.z;
       const isNearPortal = Math.hypot(portalDx, portalDz) < 3.2;
       if (isNearPortal !== this.isNearReturnStationPortal) {
         this.isNearReturnStationPortal = isNearPortal;
@@ -866,8 +927,8 @@ export class GameEngine {
       }
     }
 
-    // 8. In-world 3D Direction Guidance Ring (in Temple)
-    if (this.directionRingGroup && this.currentEnvType === 'temple') {
+    // 8. In-world 3D Direction Guidance Ring (in Temple or Logic Lamps)
+    if (this.directionRingGroup && (this.currentEnvType === 'temple' || this.currentEnvType === 'logic-lamps')) {
       this.directionRingGroup.position.set(
         this.characterPos.x,
         groundHeight + 0.04,
@@ -875,9 +936,10 @@ export class GameEngine {
       );
 
       const time = performance.now() * 0.003;
+      const activeEvents = this.getActiveSanctuaryEvents();
 
       this.waypointPointers.forEach((item, idx) => {
-        const ev = SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
+        const ev = activeEvents.find((e) => e.id === item.eventId);
         if (!ev) return;
 
         const dx = ev.position.x - this.characterPos.x;
@@ -968,6 +1030,8 @@ export class GameEngine {
 
     if (this.currentEnvType === 'mountain-station' && this.mountainEnvironment) {
       this.mountainEnvironment.update(delta);
+    } else if (this.currentEnvType === 'logic-lamps' && this.logicLampsEnvironment) {
+      this.logicLampsEnvironment.update(delta);
     } else if (this.currentEnvType === 'temple' && this.templeEnvironment) {
       this.templeEnvironment.update(delta);
     }

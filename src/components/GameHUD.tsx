@@ -6,7 +6,7 @@ interface GameHUDProps {
   onResetCamera: () => void;
   isSprinting: boolean;
   onGoToTrainStation?: () => void;
-  currentPhase?: 'mountain-station' | 'temple';
+  currentPhase?: 'mountain-station' | 'temple' | 'logic-lamps';
 }
 
 export const GameHUD: React.FC<GameHUDProps> = ({
@@ -52,10 +52,10 @@ export const GameHUD: React.FC<GameHUDProps> = ({
               <TrainTrack className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 group-hover:scale-110 transition-transform" />
               <span className="font-serif font-bold text-amber-300">富士見高原駅</span>
               <span className="hidden md:inline text-stone-200">
-                {currentPhase === 'temple' ? 'Return to Train Station' : 'Station Platforms'}
+                {currentPhase !== 'mountain-station' ? 'Return to Train Station' : 'Station Platforms'}
               </span>
               <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300 font-mono hidden sm:inline-block border border-amber-400/30">
-                {currentPhase === 'temple' ? 'Board Trains' : '3 Trains'}
+                {currentPhase !== 'mountain-station' ? 'Board Trains' : '3 Trains'}
               </span>
             </button>
           )}

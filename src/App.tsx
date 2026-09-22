@@ -18,7 +18,7 @@ import { LogicLamps } from './components/events/LogicLamps';
 import { EventCompass } from './components/EventCompass';
 import { TrainBoardingCinematic } from './components/TrainBoardingCinematic';
 
-type AppPhase = 'cinematic' | 'mountain-station' | 'boarding' | 'temple';
+type AppPhase = 'cinematic' | 'mountain-station' | 'boarding' | 'temple' | 'logic-lamps';
 
 export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,18 +88,21 @@ export default function App() {
   };
 
   const handleBoardingComplete = () => {
-    setCurrentPhase('temple');
     setNearbyTrain(null);
     if (engineRef.current) {
       engineRef.current.setEventModalOpen(false);
-      // When the user boards the train of the killer's trail, remove the other two events from the temple!
-      let activeEventsForTrain: SanctuaryEventId[] = ['tech-treasure-hunt'];
-      if (boardingTrain?.id === 'arya') {
-        activeEventsForTrain = ['promptify'];
-      } else if (boardingTrain?.id === 'sandip') {
-        activeEventsForTrain = ['logic-lamps'];
+      if (boardingTrain?.id === 'sandip') {
+        setCurrentPhase('logic-lamps');
+        engineRef.current.switchEnvironment('logic-lamps');
+      } else {
+        setCurrentPhase('temple');
+        // When the user boards the train of the killer's trail, remove the other two events from the temple!
+        let activeEventsForTrain: SanctuaryEventId[] = ['tech-treasure-hunt'];
+        if (boardingTrain?.id === 'arya') {
+          activeEventsForTrain = ['promptify'];
+        }
+        engineRef.current.switchEnvironment('temple', false, activeEventsForTrain);
       }
-      engineRef.current.switchEnvironment('temple', false, activeEventsForTrain);
     }
   };
 
@@ -109,7 +112,7 @@ export default function App() {
       if ((e.code === 'KeyE' || e.key === 'e' || e.key === 'E') && !activeEvent) {
         if (currentPhase === 'mountain-station' && nearbyTrain) {
           handleBoardTrain(nearbyTrain.id);
-        } else if (currentPhase === 'temple') {
+        } else if (currentPhase === 'temple' || currentPhase === 'logic-lamps') {
           if (isNearStationPortal) {
             handleGoToTrainStation();
           } else if (nearbyEvent) {
@@ -134,7 +137,12 @@ export default function App() {
     setGameError(null);
 
     // Initialize 3D WebGL engine in appropriate environment
-    const initialEnv = currentPhase === 'temple' ? 'temple' : 'mountain-station';
+    const initialEnv: WorldEnvironmentType =
+      currentPhase === 'logic-lamps'
+        ? 'logic-lamps'
+        : currentPhase === 'temple'
+        ? 'temple'
+        : 'mountain-station';
     let engine: GameEngine;
     try {
       engine = new GameEngine(containerRef.current, initialEnv);
@@ -246,7 +254,11 @@ export default function App() {
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-950 text-white z-50">
               <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-sm tracking-widest text-stone-300 uppercase">
-                {currentPhase === 'mountain-station' ? 'Entering Fujimi Mountain Ridge...' : 'Entering Sacred Sanctuary...'}
+                {currentPhase === 'mountain-station'
+                  ? 'Entering Fujimi Mountain Ridge...'
+                  : currentPhase === 'logic-lamps'
+                  ? 'Entering Sacred Lantern Village...'
+                  : 'Entering Sacred Sanctuary...'}
               </p>
             </div>
           )}
@@ -289,7 +301,7 @@ export default function App() {
               onResetCamera={handleResetCamera}
               isSprinting={isSprinting}
               onGoToTrainStation={handleGoToTrainStation}
-              currentPhase={currentPhase === 'temple' ? 'temple' : 'mountain-station'}
+              currentPhase={currentPhase === 'mountain-station' ? 'mountain-station' : (currentPhase === 'logic-lamps' ? 'logic-lamps' : 'temple')}
             />
           )}
 
@@ -328,8 +340,8 @@ export default function App() {
             </div>
           )}
 
-          {/* Temple Sanctuary: Return to Train Station Gate Prompt */}
-          {currentPhase === 'temple' && isNearStationPortal && !activeEvent && (
+          {/* Temple Sanctuary / Lantern Village: Return to Train Station Gate Prompt */}
+          {(currentPhase === 'temple' || currentPhase === 'logic-lamps') && isNearStationPortal && !activeEvent && (
             <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
               <button
                 type="button"
@@ -346,17 +358,17 @@ export default function App() {
             </div>
           )}
 
-          {/* Temple Sanctuary: Proximity Interaction Prompt */}
-          {currentPhase === 'temple' && nearbyEvent && !activeEvent && !isNearStationPortal && (
+          {/* Temple Sanctuary / Lantern Village: Proximity Interaction Prompt */}
+          {(currentPhase === 'temple' || currentPhase === 'logic-lamps') && nearbyEvent && !activeEvent && !isNearStationPortal && (
             <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
               <button
                 type="button"
                 onClick={handleOpenNearbyEvent}
-                className="px-5 py-2.5 rounded-full bg-stone-900/90 border border-amber-400/50 text-white shadow-xl shadow-black/50 backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-medium tracking-wide hover:bg-stone-800 transition-all active:scale-95"
+                className="px-5 py-2.5 rounded-full bg-stone-900/90 border border-emerald-400/50 text-white shadow-xl shadow-black/50 backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-medium tracking-wide hover:bg-stone-800 transition-all active:scale-95"
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>
-                  {SANCTUARY_EVENTS.find((e) => e.id === nearbyEvent)?.name || 'Event'}
+                  {(SANCTUARY_EVENTS.find((e) => e.id === nearbyEvent)?.name) || (nearbyEvent === 'logic-lamps' ? 'Logic Lamps' : 'Event')}
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-stone-300 font-mono">
                   [E]
