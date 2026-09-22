@@ -399,7 +399,11 @@ export default function App() {
             <Promptify onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
           )}
           {activeEvent === 'logic-lamps' && (
-            <LogicLamps onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
+            <LogicLamps
+              onClose={handleCloseEvent}
+              onGoToTrainStation={handleGoToTrainStation}
+              onRegister={handleRegisterKillersTrail}
+            />
           )}
         </div>
       )}

@@ -167,20 +167,16 @@ export class LanternField {
   /** Trigger the continuous 100+ lantern release upon successful registration */
   public activate() {
     this.isActivated = true;
+    // Stagger launch delays so 140+ lanterns float up immediately in waves
+    this.lanterns.forEach((l, idx) => {
+      l.delay = (idx % 12) * 0.15;
+    });
   }
 
   public update(delta: number) {
     if (!this.isActivated) return;
 
     const time = performance.now() * 0.001;
-
-    // Gradually swell the ambient festival glow
-    if (this.ambientAuraLight.intensity < 3.5) {
-      this.ambientAuraLight.intensity += delta * 0.9;
-    }
-    this.glowLights.forEach((lt) => {
-      if (lt.intensity < 2.6) lt.intensity += delta * 0.6;
-    });
 
     for (let i = 0; i < this.count; i++) {
       const l = this.lanterns[i];
