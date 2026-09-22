@@ -28,6 +28,7 @@ export default function App() {
   const [currentPhase, setCurrentPhase] = useState<AppPhase>('cinematic');
   const [isSprinting, setIsSprinting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [gameError, setGameError] = useState<string | null>(null);
 
   // Active Sanctuary Event Modal ('tech-treasure-hunt' | 'promptify' | 'logic-lamps' | null)
   const [activeEvent, setActiveEvent] = useState<SanctuaryEventId | null>(null);
@@ -130,10 +131,19 @@ export default function App() {
     if (engineRef.current) return; // already initialized — engine stays alive across boarding
 
     setIsLoading(true);
+    setGameError(null);
 
     // Initialize 3D WebGL engine in appropriate environment
     const initialEnv = currentPhase === 'temple' ? 'temple' : 'mountain-station';
-    const engine = new GameEngine(containerRef.current, initialEnv);
+    let engine: GameEngine;
+    try {
+      engine = new GameEngine(containerRef.current, initialEnv);
+    } catch (error) {
+      console.error('Unable to initialize the 3D sanctuary:', error);
+      setIsLoading(false);
+      setGameError('The 3D world could not start on this device. Please reload once to try again.');
+      return;
+    }
     engineRef.current = engine;
 
     // Connect waypoint and train event handlers
@@ -216,7 +226,7 @@ export default function App() {
       {currentPhase === 'boarding' && (
         <TrainBoardingCinematic
           train={boardingTrain}
-          videoSrc="/train_transition.mp4"
+          videoSrc="/train_transition_fast.mp4"
           onComplete={handleBoardingComplete}
         />
       )}
@@ -238,6 +248,19 @@ export default function App() {
               <p className="text-sm tracking-widest text-stone-300 uppercase">
                 {currentPhase === 'mountain-station' ? 'Entering Fujimi Mountain Ridge...' : 'Entering Sacred Sanctuary...'}
               </p>
+            </div>
+          )}
+
+          {gameError && !isLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-stone-950 px-6 text-center text-white z-50">
+              <p className="max-w-md text-sm tracking-wide text-stone-300">{gameError}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="rounded-xl border border-amber-400/50 bg-stone-900 px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-amber-200"
+              >
+                Reload Sanctuary
+              </button>
             </div>
           )}
 

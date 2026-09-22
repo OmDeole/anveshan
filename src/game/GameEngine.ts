@@ -85,6 +85,30 @@ export class GameEngine {
   private animFrameId: number | null = null;
   private isRunning: boolean = false;
 
+  private disposeSceneObject(object: THREE.Object3D) {
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      mesh.geometry?.dispose();
+
+      const material = mesh.material;
+      const materials = Array.isArray(material) ? material : material ? [material] : [];
+      materials.forEach((mat) => {
+        Object.values(mat).forEach((value) => {
+          if (value instanceof THREE.Texture) value.dispose();
+        });
+        mat.dispose();
+      });
+    });
+  }
+
+  private disposeSceneChildren(except: THREE.Object3D[] = []) {
+    const childrenToRemove = this.scene.children.filter((child) => !except.includes(child));
+    childrenToRemove.forEach((child) => {
+      this.disposeSceneObject(child);
+      this.scene.remove(child);
+    });
+  }
+
   constructor(container: HTMLElement, initialEnv: WorldEnvironmentType = 'mountain-station') {
     this.container = container;
     this.currentEnvType = initialEnv;
@@ -155,13 +179,7 @@ export class GameEngine {
     this.currentEnvType = envType;
 
     // Remove all previous environment meshes from scene
-    const childrenToRemove: THREE.Object3D[] = [];
-    this.scene.children.forEach((child) => {
-      if (child !== this.samurai.group && child !== this.directionRingGroup) {
-        childrenToRemove.push(child);
-      }
-    });
-    childrenToRemove.forEach((c) => this.scene.remove(c));
+    this.disposeSceneChildren([this.samurai.group, this.directionRingGroup]);
 
     if (envType === 'temple') {
       this.mountainEnvironment = null;
@@ -977,6 +995,9 @@ export class GameEngine {
   public destroy() {
     this.stop();
     this.removeEventListeners();
+    this.disposeSceneChildren();
+    this.samurai.group.clear();
+    this.directionRingGroup.clear();
     if (this.directionRingGroup && this.directionRingGroup.parent) {
       this.directionRingGroup.parent.remove(this.directionRingGroup);
     }

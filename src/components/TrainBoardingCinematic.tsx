@@ -11,7 +11,7 @@ interface TrainBoardingCinematicProps {
 
 export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
   onComplete,
-  videoSrc = '/train_transition.mp4',
+  videoSrc = '/train_transition_fast.mp4',
   train,
 }) => {
   const [progress, setProgress] = useState<number>(0);
@@ -81,6 +81,7 @@ export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
         ref={videoRef}
         playsInline
         autoPlay
+        preload="metadata"
         className="absolute inset-0 w-full h-full object-cover"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleFinish}
@@ -90,7 +91,7 @@ export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
         }}
       >
         <source src={videoSrc} type="video/mp4" />
-        <source src="/train_transition.mov" type="video/quicktime" />
+        <source src="/train_transition_fast.mp4" type="video/mp4" />
       </video>
 
       {/* Cinematic Vignette Overlay */}
@@ -153,4 +154,3 @@ export const TrainBoardingCinematic: React.FC<TrainBoardingCinematicProps> = ({
     </div>
   );
 };
-
