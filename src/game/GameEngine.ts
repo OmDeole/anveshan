@@ -232,7 +232,7 @@ export class GameEngine {
     this.samurai.setFacingAngle(0);
     this.lastFacingAngle = 0;
     this.samurai.group.position.copy(this.characterPos);
-    this.cameraAngleY = 0;
+    this.cameraAngleY = envType === 'logic-lamps' ? Math.PI : 0;
     this.cameraPitch = this.getDefaultCameraPitch();
     this.cameraDistance = this.getDefaultCameraDistance();
     this.currentCameraPos.copy(this.characterPos).add(this.calculateCameraOffset());

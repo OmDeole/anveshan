@@ -116,12 +116,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             rel="noopener noreferrer"
             title="Register for ANVESHAN 3.0 Events"
             style={{ animation: 'hudRegisterPulse 2.8s ease-in-out infinite' }}
-            className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-1.5 sm:py-3 rounded-xl
-              bg-gradient-to-r from-red-600 via-rose-600 to-red-700
-              hover:from-red-500 hover:via-rose-500 hover:to-red-600
-              border border-amber-400/60 hover:border-amber-300
-              text-white text-xs sm:text-sm font-bold tracking-wider sm:tracking-widest uppercase
-              transition-all active:scale-95 group shadow-lg"
+            className="flex items-center gap-1 sm:gap-2.5 px-2 sm:px-5 py-1 sm:py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:via-rose-500 hover:to-red-600 border border-amber-400/60 hover:border-amber-300 text-white text-[10px] sm:text-sm font-bold tracking-wider sm:tracking-widest uppercase transition-all active:scale-95 group shadow-lg"
           >
             {/* Pulsing live beacon */}
             <span

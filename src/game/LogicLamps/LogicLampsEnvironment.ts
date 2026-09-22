@@ -822,11 +822,6 @@ export class LogicLampsEnvironment {
     toroCap.rotation.y = Math.PI / 4;
     g.add(toroCap);
 
-    // Interior warm light
-    const intLight = new THREE.PointLight(0xffa020, 1.6, 8.0);
-    intLight.position.set(0, 0.81 + 1.0, 0);
-    g.add(intLight);
-
     return g;
   }
 
@@ -913,11 +908,6 @@ export class LogicLampsEnvironment {
     const lanternBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.28, 8), new THREE.MeshStandardMaterial({ color: 0xff4422, emissive: 0xff2200, emissiveIntensity: 1.2 }));
     lanternBody.position.set(0, 0.5 + wallH - 0.2, verandaZ * 0.5);
     g.add(lanternBody);
-
-    // Interior warm glow
-    const intLight = new THREE.PointLight(0xffcc44, 2.0, 10.0);
-    intLight.position.set(0, 0.5 + 1.0, 0);
-    g.add(intLight);
 
     return g;
   }
@@ -1043,14 +1033,6 @@ export class LogicLampsEnvironment {
     lampHead.position.set(w * 0.5 + 0.5, 3.35, (l * 0.5) + 0.6);
     g.add(lampHead);
 
-    // Lights
-    const shopLight = new THREE.PointLight(0xffbb44, 2.2, 10.0);
-    shopLight.position.set(0, 1.0, l * 0.5 + 0.8);
-    g.add(shopLight);
-    const upperLight = new THREE.PointLight(0xffaa22, 1.4, 8.0);
-    upperLight.position.set(0, floor1H + 0.22 + 1.0, 0);
-    g.add(upperLight);
-
     return g;
   }
 
@@ -1146,11 +1128,6 @@ export class LogicLampsEnvironment {
     const intGlow = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.4, 1.6), interiorMat);
     intGlow.position.set(0, 1.7, -l * 0.5 + 0.25);
     g.add(intGlow);
-
-    // Warm interior light
-    const intLight = new THREE.PointLight(0xffcc66, 2.0, 9.0);
-    intLight.position.set(0, 1.8, 0);
-    g.add(intLight);
 
     return g;
   }
@@ -1695,9 +1672,6 @@ export class LogicLampsEnvironment {
       lanternMesh.position.set(lx, 3.15, 0);
       toriiGroup.add(lanternMesh);
 
-      const lanternLight = new THREE.PointLight(0xff7700, 1.0, 4.5);
-      lanternLight.position.set(lx, 3.15, 0);
-      toriiGroup.add(lanternLight);
     });
 
     this.scene.add(toriiGroup);
@@ -1750,11 +1724,6 @@ export class LogicLampsEnvironment {
       kasa.position.y = 1.32;
       group.add(kasa);
 
-      // Warm Amber Point Light
-      const light = new THREE.PointLight(0xff9911, 1.1, 6.0);
-      light.position.y = 1.05;
-      group.add(light);
-
       this.scene.add(group);
     });
   }
@@ -1801,10 +1770,7 @@ export class LogicLampsEnvironment {
       btmCap.position.y = -0.22;
       group.add(topCap, btmCap);
 
-      const pLight = new THREE.PointLight(0xff7700, 1.2, 5.5);
-      group.add(pLight);
-
-      this.hangingLanterns.push({ mesh: body, light: pLight });
+      this.hangingLanterns.push({ mesh: body });
       this.scene.add(group);
     });
   }
@@ -1846,11 +1812,6 @@ export class LogicLampsEnvironment {
       const paper = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.34, 0.36), floatMat);
       paper.position.y = 0.18;
       group.add(paper);
-
-      // Small warm point light
-      const light = new THREE.PointLight(0xff6d00, 0.8, 3.5);
-      light.position.y = 0.2;
-      group.add(light);
 
       this.ambientRiverLanterns.push({
         group,

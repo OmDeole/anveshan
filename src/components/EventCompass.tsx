@@ -14,7 +14,7 @@ export const EventCompass: React.FC<EventCompassProps> = ({
   if (!waypoints || waypoints.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed top-[max(3.85rem,calc(env(safe-area-inset-top)+3.2rem))] sm:top-5 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center select-none max-w-[96vw]">
+    <div className="pointer-events-none fixed top-[max(4.8rem,calc(env(safe-area-inset-top)+4.4rem))] sm:top-5 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center select-none max-w-[96vw]">
       {/* Top Sanctuary Navigation Bar */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 rounded-2xl backdrop-blur-xl bg-stone-950/75 border border-white/15 shadow-2xl shadow-black/80 pointer-events-auto">
         {waypoints.map((wp) => {

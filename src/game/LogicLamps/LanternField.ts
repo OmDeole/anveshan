@@ -96,18 +96,6 @@ export class LanternField {
     this.glowMesh.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 20, 0), 140);
     this.group.add(this.glowMesh);
 
-    // ── 4. Scene-level warm festival ambient lighting ────────────────────────
-    this.ambientAuraLight = new THREE.PointLight(0xff8c00, 0, 50, 1.2);
-    this.ambientAuraLight.position.set(0, 8.0, 0);
-    this.group.add(this.ambientAuraLight);
-
-    [-20, -7, 7, 20].forEach((xPos) => {
-      const pl = new THREE.PointLight(0xff7700, 0, 24, 1.5);
-      pl.position.set(xPos, 4.0, 0);
-      this.glowLights.push(pl);
-      this.group.add(pl);
-    });
-
     this.initLanternData();
     this.hideAll();
   }
