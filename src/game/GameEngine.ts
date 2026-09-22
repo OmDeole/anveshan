@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { SamuraiCharacter } from './SamuraiCharacter';
 import { Environment, SANCTUARY_EVENTS } from './Environment';
 import { MountainStationEnvironment, STATION_TRAINS } from './MountainStationEnvironment';
+import { PromptifyEnvironment } from './promptify/PromptifyEnvironment';
+import { PROMPTIFY_CONFIG, PROMPTIFY_EVENT_DATA } from './promptify/PromptifyConfig';
 import { InputState, SanctuaryEventId, WaypointIndicatorData, TrainData, TrainId, WorldEnvironmentType } from '../types';
 
 export class GameEngine {
@@ -15,6 +17,7 @@ export class GameEngine {
   public currentEnvType: WorldEnvironmentType = 'mountain-station';
   public mountainEnvironment: MountainStationEnvironment | null = null;
   public templeEnvironment: Environment | null = null;
+  public promptifyEnvironment: PromptifyEnvironment | null = null;
 
   // Game entities
   public samurai: SamuraiCharacter;
@@ -79,6 +82,12 @@ export class GameEngine {
   private isPointerDown: boolean = false;
   private lastPointerX: number = 0;
   private lastPointerY: number = 0;
+  private pointerDownX: number = 0;
+  private pointerDownY: number = 0;
+  private pointerDownTime: number = 0;
+  public isPromptifyRegistered: boolean = false;
+  private fireworksStarted: boolean = false;
+  private celebrationLookOffset: number = 0;
   private activePointers: Map<number, { x: number; y: number }> = new Map();
   private initialPinchDist: number | null = null;
   private animFrameId: number | null = null;
@@ -113,6 +122,16 @@ export class GameEngine {
     if (initialEnv === 'mountain-station') {
       this.characterPos.set(0, 6.2, -28); // High mountain ridge spawn looking at path & Fuji
       this.mountainEnvironment = new MountainStationEnvironment(this.scene);
+    } else if (initialEnv === 'promptify') {
+      this.characterPos.set(
+        PROMPTIFY_CONFIG.spawnPosition.x,
+        PROMPTIFY_CONFIG.spawnPosition.y,
+        PROMPTIFY_CONFIG.spawnPosition.z
+      );
+      this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+      this.promptifyEnvironment.onCelebrationFinished = () => {
+        this.easeCameraBackDown();
+      };
     } else {
       this.characterPos.set(-2, 0.7, 4); // Temple sanctuary courtyard spawn
       this.templeEnvironment = new Environment(this.scene, this.activeTempleEventIds);
@@ -141,7 +160,7 @@ export class GameEngine {
   }
 
   /**
-   * Seamlessly switch between Mountain Station and Temple environments
+   * Seamlessly switch between Mountain Station, Temple, and Promptify Japanese Market environments
    */
   public switchEnvironment(
     envType: WorldEnvironmentType,
@@ -149,6 +168,13 @@ export class GameEngine {
     activeTempleEvents: SanctuaryEventId[] = ['tech-treasure-hunt']
   ) {
     this.currentEnvType = envType;
+
+    // Clean up active environments before removing objects
+    if (this.promptifyEnvironment && envType !== 'promptify') {
+      this.promptifyEnvironment.destroy();
+      this.promptifyEnvironment = null;
+      this.isPromptifyRegistered = false;
+    }
 
     // Remove all previous environment meshes from scene
     const childrenToRemove: THREE.Object3D[] = [];
@@ -159,8 +185,23 @@ export class GameEngine {
     });
     childrenToRemove.forEach((c) => this.scene.remove(c));
 
-    if (envType === 'temple') {
+    if (envType === 'promptify') {
       this.mountainEnvironment = null;
+      this.templeEnvironment = null;
+      this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+      this.promptifyEnvironment.onCelebrationFinished = () => {
+        this.easeCameraBackDown();
+      };
+      this.characterPos.set(
+        PROMPTIFY_CONFIG.spawnPosition.x,
+        PROMPTIFY_CONFIG.spawnPosition.y,
+        PROMPTIFY_CONFIG.spawnPosition.z
+      );
+      this.rebuildDirectionPointers();
+      this.directionRingGroup.visible = true;
+    } else if (envType === 'temple') {
+      this.mountainEnvironment = null;
+      this.promptifyEnvironment = null;
       this.activeTempleEventIds = activeTempleEvents;
       this.templeEnvironment = new Environment(this.scene, activeTempleEvents);
       this.characterPos.set(-2, 0.7, 4); // Temple Sanctuary central courtyard
@@ -168,6 +209,7 @@ export class GameEngine {
       this.directionRingGroup.visible = true;
     } else {
       this.templeEnvironment = null;
+      this.promptifyEnvironment = null;
       this.mountainEnvironment = new MountainStationEnvironment(this.scene);
       if (spawnAtStation) {
         this.characterPos.set(0, 0.85, 2.0); // Station platform concourse directly facing the 3 trains
@@ -201,7 +243,19 @@ export class GameEngine {
     this.input.sprint = false;
   }
 
-
+  /**
+   * Trigger the post-registration in-game fireworks celebration in Promptify
+   */
+  public triggerPromptifyRegistration() {
+    if (this.fireworksStarted) return;
+    this.fireworksStarted = true;
+    this.isPromptifyRegistered = true;
+    console.log('[Promptify] GameEngine: Starting fireworks celebration');
+    if (this.promptifyEnvironment) {
+      this.promptifyEnvironment.triggerCelebration();
+      this.easeCameraPitchUp();
+    }
+  }
 
   /**
    * Set inputs from React VirtualJoystick or Keyboard handlers
@@ -268,7 +322,12 @@ export class GameEngine {
     const chevronGeo = new THREE.ShapeGeometry(shape);
     chevronGeo.rotateX(-Math.PI / 2); // Lay flat on XZ plane
 
-    this.getActiveSanctuaryEvents().forEach((ev) => {
+    const targetEvents =
+      this.currentEnvType === 'promptify'
+        ? [PROMPTIFY_EVENT_DATA]
+        : this.getActiveSanctuaryEvents();
+
+    targetEvents.forEach((ev) => {
       const pGroup = new THREE.Group();
 
       const mat = new THREE.MeshBasicMaterial({
@@ -432,6 +491,9 @@ export class GameEngine {
       this.isPointerDown = true;
       this.lastPointerX = e.clientX;
       this.lastPointerY = e.clientY;
+      this.pointerDownX = e.clientX;
+      this.pointerDownY = e.clientY;
+      this.pointerDownTime = performance.now();
     } else if (this.activePointers.size === 2) {
       // Begin pinch zoom tracking
       const pts = Array.from(this.activePointers.values());
@@ -477,6 +539,31 @@ export class GameEngine {
   };
 
   private onPointerUp = (e: PointerEvent) => {
+    // Interactive 3D Fireworks (Section 15):
+    // Active ONLY AFTER registration! When player clicks or taps on the screen, launch rocket to that sky coordinate!
+    if (
+      this.currentEnvType === 'promptify' &&
+      this.isPromptifyRegistered &&
+      this.promptifyEnvironment &&
+      !this.isEventModalOpen
+    ) {
+      const moveDist = Math.hypot(e.clientX - this.pointerDownX, e.clientY - this.pointerDownY);
+      const pressDuration = performance.now() - this.pointerDownTime;
+      // Clean tap/click detection (not camera orbit drag)
+      if (moveDist < 8 && pressDuration < 350) {
+        const rect = this.container.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        this.promptifyEnvironment.fireworks.launchFromScreenClick(
+          clickX,
+          clickY,
+          this.camera,
+          rect.width,
+          rect.height
+        );
+      }
+    }
+
     this.activePointers.delete(e.pointerId);
     if (this.activePointers.size === 0) {
       this.isPointerDown = false;
@@ -571,6 +658,27 @@ export class GameEngine {
             this.characterPos.z = prevZ;
           }
         }
+      } else if (this.currentEnvType === 'promptify') {
+        // Promptify Japanese Night Market Central Stone Pathway
+        const isInMarketPath = (x: number, z: number) => {
+          return (
+            x >= PROMPTIFY_CONFIG.walkableBounds.minX &&
+            x <= PROMPTIFY_CONFIG.walkableBounds.maxX &&
+            z >= PROMPTIFY_CONFIG.walkableBounds.minZ &&
+            z <= PROMPTIFY_CONFIG.walkableBounds.maxZ
+          );
+        };
+
+        if (!isInMarketPath(this.characterPos.x, this.characterPos.z)) {
+          if (isInMarketPath(this.characterPos.x, prevZ)) {
+            this.characterPos.z = prevZ;
+          } else if (isInMarketPath(prevX, this.characterPos.z)) {
+            this.characterPos.x = prevX;
+          } else {
+            this.characterPos.x = prevX;
+            this.characterPos.z = prevZ;
+          }
+        }
       } else {
         // Temple Sanctuary Multi-Zone Boundary
         const isInSanctuary = (x: number, z: number) => {
@@ -602,6 +710,17 @@ export class GameEngine {
     if (this.currentEnvType === 'mountain-station') {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -18.0, 18.0);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -35.0, 37.0);
+    } else if (this.currentEnvType === 'promptify') {
+      this.characterPos.x = THREE.MathUtils.clamp(
+        this.characterPos.x,
+        PROMPTIFY_CONFIG.walkableBounds.minX,
+        PROMPTIFY_CONFIG.walkableBounds.maxX
+      );
+      this.characterPos.z = THREE.MathUtils.clamp(
+        this.characterPos.z,
+        PROMPTIFY_CONFIG.walkableBounds.minZ,
+        PROMPTIFY_CONFIG.walkableBounds.maxZ
+      );
     } else {
       this.characterPos.x = THREE.MathUtils.clamp(this.characterPos.x, -40.5, 41.5);
       this.characterPos.z = THREE.MathUtils.clamp(this.characterPos.z, -12.0, 40.5);
@@ -619,6 +738,8 @@ export class GameEngine {
       } else {
         groundHeight = 0.85; // Platform & station ground level
       }
+    } else if (this.currentEnvType === 'promptify') {
+      groundHeight = PROMPTIFY_CONFIG.groundHeight;
     } else {
       // Temple Sanctuary elevation
       groundHeight = 0.7;
@@ -667,13 +788,13 @@ export class GameEngine {
 
     const targetLookAt = new THREE.Vector3(
       this.characterPos.x,
-      this.characterPos.y + 1.25,
+      this.characterPos.y + 1.25 + this.celebrationLookOffset,
       this.characterPos.z
     );
     this.cameraLookTarget.lerp(targetLookAt, Math.min(10.0 * delta, 0.95));
     this.camera.lookAt(this.cameraLookTarget);
 
-    // 7. Proximity Detection: Trains in Mountain Station vs Waypoints in Temple
+    // 7. Proximity Detection
     if (this.currentEnvType === 'mountain-station') {
       let foundTrain: TrainData | null = null;
       const trainTriggerDist = 3.2;
@@ -692,6 +813,42 @@ export class GameEngine {
         this.nearbyTrain = foundTrain;
         if (this.onNearTrainChanged) {
           this.onNearTrainChanged(foundTrain);
+        }
+      }
+    } else if (this.currentEnvType === 'promptify') {
+      // Promptify Checkpoint Proximity
+      const cpDx = this.characterPos.x - PROMPTIFY_CONFIG.checkpointPosition.x;
+      const cpDz = this.characterPos.z - PROMPTIFY_CONFIG.checkpointPosition.z;
+      const dist = Math.hypot(cpDx, cpDz);
+
+      let foundNearby: SanctuaryEventId | null = null;
+      if (dist < 2.5) {
+        foundNearby = 'promptify';
+        if (this.lastTriggeredEventId !== 'promptify' && !this.isEventModalOpen) {
+          this.lastTriggeredEventId = 'promptify';
+          if (this.onEventTriggered) {
+            this.onEventTriggered('promptify');
+          }
+        }
+      } else if (dist > 3.6 && this.lastTriggeredEventId === 'promptify') {
+        this.lastTriggeredEventId = null;
+      }
+
+      if (foundNearby !== this.nearbyEventId) {
+        this.nearbyEventId = foundNearby;
+        if (this.onNearEventChanged) {
+          this.onNearEventChanged(foundNearby);
+        }
+      }
+
+      // Check proximity to Return-to-Station Departure Gate (at x: 0, z: -30)
+      const portalDx = this.characterPos.x - PROMPTIFY_CONFIG.returnGatePosition.x;
+      const portalDz = this.characterPos.z - PROMPTIFY_CONFIG.returnGatePosition.z;
+      const isNearPortal = Math.hypot(portalDx, portalDz) < 3.2;
+      if (isNearPortal !== this.isNearReturnStationPortal) {
+        this.isNearReturnStationPortal = isNearPortal;
+        if (this.onNearStationPortalChanged) {
+          this.onNearStationPortalChanged(isNearPortal);
         }
       }
     } else {
@@ -749,8 +906,8 @@ export class GameEngine {
       }
     }
 
-    // 8. In-world 3D Direction Guidance Ring (in Temple)
-    if (this.directionRingGroup && this.currentEnvType === 'temple') {
+    // 8. In-world 3D Direction Guidance Ring (in Temple & Promptify)
+    if (this.directionRingGroup && (this.currentEnvType === 'temple' || this.currentEnvType === 'promptify')) {
       this.directionRingGroup.position.set(
         this.characterPos.x,
         groundHeight + 0.04,
@@ -760,7 +917,10 @@ export class GameEngine {
       const time = performance.now() * 0.003;
 
       this.waypointPointers.forEach((item, idx) => {
-        const ev = SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
+        const ev =
+          this.currentEnvType === 'promptify'
+            ? PROMPTIFY_EVENT_DATA
+            : SANCTUARY_EVENTS.find((e) => e.id === item.eventId);
         if (!ev) return;
 
         const dx = ev.position.x - this.characterPos.x;
@@ -814,6 +974,30 @@ export class GameEngine {
         });
 
         this.onWaypointsUpdate(trainWaypoints);
+      } else if (this.currentEnvType === 'promptify') {
+        const dx = PROMPTIFY_CONFIG.checkpointPosition.x - this.characterPos.x;
+        const dz = PROMPTIFY_CONFIG.checkpointPosition.z - this.characterPos.z;
+        const distance = Math.hypot(dx, dz);
+        const eventAngle = Math.atan2(dx, -dz);
+
+        let diff = (eventAngle - camYaw) * (180 / Math.PI);
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+
+        const promptifyWaypoint: WaypointIndicatorData[] = [
+          {
+            id: PROMPTIFY_EVENT_DATA.id,
+            name: PROMPTIFY_EVENT_DATA.name,
+            kanji: PROMPTIFY_EVENT_DATA.kanji,
+            tagline: PROMPTIFY_EVENT_DATA.tagline,
+            colorHex: PROMPTIFY_EVENT_DATA.colorHex,
+            distance: Math.round(distance),
+            relativeAngleDeg: Math.round(diff),
+            isNearby: distance <= 2.5,
+          },
+        ];
+
+        this.onWaypointsUpdate(promptifyWaypoint);
       } else {
         const waypointsData: WaypointIndicatorData[] = this.getActiveSanctuaryEvents().map((event) => {
           const dx = event.position.x - this.characterPos.x;
@@ -851,6 +1035,8 @@ export class GameEngine {
 
     if (this.currentEnvType === 'mountain-station' && this.mountainEnvironment) {
       this.mountainEnvironment.update(delta);
+    } else if (this.currentEnvType === 'promptify' && this.promptifyEnvironment) {
+      this.promptifyEnvironment.update(delta);
     } else if (this.currentEnvType === 'temple' && this.templeEnvironment) {
       this.templeEnvironment.update(delta);
     }
@@ -858,7 +1044,6 @@ export class GameEngine {
     this.renderer.render(this.scene, this.camera);
     this.animFrameId = requestAnimationFrame(this.tick);
   };
-
 
   public start() {
     if (this.isRunning) return;
@@ -875,9 +1060,67 @@ export class GameEngine {
     }
   }
 
+
+
+  /**
+   * Subtle upward camera ease so fireworks naturally enter the player's view
+   * without taking away player control.
+   */
+  public easeCameraPitchUp() {
+    let elapsed = 0;
+    const duration = 2.0;
+    const startPitch = this.cameraPitch;
+    const targetPitch = 0.22;
+    const startLookOffset = this.celebrationLookOffset;
+    const targetLookOffset = 5.2; // Elevation of target into the sky
+    const startDist = this.cameraDistance;
+    const targetDist = 9.2; // Majestic wide framing of samurai & sky
+
+    const pitchInterval = setInterval(() => {
+      elapsed += 0.03;
+      const progress = Math.min(elapsed / duration, 1.0);
+      const ease = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+      if (!this.isPointerDown) {
+        this.cameraPitch = THREE.MathUtils.lerp(startPitch, targetPitch, ease);
+        this.celebrationLookOffset = THREE.MathUtils.lerp(startLookOffset, targetLookOffset, ease);
+        this.cameraDistance = THREE.MathUtils.lerp(startDist, targetDist, ease);
+      }
+      if (progress >= 1.0) {
+        clearInterval(pitchInterval);
+      }
+    }, 30);
+  }
+
+  public easeCameraBackDown() {
+    let elapsed = 0;
+    const duration = 2.2;
+    const startPitch = this.cameraPitch;
+    const targetPitch = 0.38;
+    const startLookOffset = this.celebrationLookOffset;
+    const startDist = this.cameraDistance;
+
+    const returnInterval = setInterval(() => {
+      elapsed += 0.03;
+      const progress = Math.min(elapsed / duration, 1.0);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      if (!this.isPointerDown) {
+        this.cameraPitch = THREE.MathUtils.lerp(startPitch, targetPitch, ease);
+        this.celebrationLookOffset = THREE.MathUtils.lerp(startLookOffset, 0, ease);
+        this.cameraDistance = THREE.MathUtils.lerp(startDist, 7.2, ease);
+      }
+      if (progress >= 1.0) {
+        clearInterval(returnInterval);
+      }
+    }, 30);
+  }
+
   public destroy() {
     this.stop();
     this.removeEventListeners();
+    if (this.promptifyEnvironment) {
+      this.promptifyEnvironment.destroy();
+      this.promptifyEnvironment = null;
+    }
     if (this.directionRingGroup && this.directionRingGroup.parent) {
       this.directionRingGroup.parent.remove(this.directionRingGroup);
     }
@@ -886,5 +1129,4 @@ export class GameEngine {
     }
     this.renderer.dispose();
   }
-
 }
