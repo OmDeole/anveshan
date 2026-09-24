@@ -315,13 +315,17 @@
 
     @media (max-width: 768px) {
       .fixed-register-overlay {
-        top: 14px;
-        right: 58px;
+        top: calc(var(--nav-height) + 12px);
+        right: 16px;
+        left: 16px;
+        justify-content: center;
       }
 
       .btn-register-fixed {
-        padding: 8px 16px;
-        font-size: 0.76rem;
+        width: min(100%, 280px);
+        justify-content: center;
+        padding: 9px 14px;
+        font-size: 0.72rem;
         gap: 6px;
       }
     }
@@ -360,7 +364,27 @@
 
     @media (max-width: 768px) {
       .navbar-container {
-        padding-right: 130px;
+        padding-right: 24px;
+      }
+
+      .brand-logo {
+        gap: 8px;
+      }
+
+      .brand-emblem,
+      .brand-crest-svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      .brand-name {
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+      }
+
+      .brand-sub {
+        font-size: 0.58rem;
+        letter-spacing: 0.14em;
       }
     }
 
