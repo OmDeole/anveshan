@@ -102,7 +102,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             </button>
           </div>
 
-          {/* Row 2: Quick Register — bigger, vermilion, opens landing.html in new tab */}
+          {/* Quick Register: floating above mobile action controls, inline on desktop */}
           <style>{`
             @keyframes hudRegisterPulse {
               0%, 100% { box-shadow: 0 4px 20px rgba(220,38,38,0.55), 0 0 14px rgba(252,211,77,0.3); }
@@ -116,12 +116,13 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             rel="noopener noreferrer"
             title="Register for ANVESHAN 3.0 Events"
             style={{ animation: 'hudRegisterPulse 2.8s ease-in-out infinite' }}
-            className="flex items-center gap-2.5 px-5 py-3 rounded-xl
+            className="fixed bottom-36 right-4 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap
               bg-gradient-to-r from-red-600 via-rose-600 to-red-700
               hover:from-red-500 hover:via-rose-500 hover:to-red-600
               border border-amber-400/60 hover:border-amber-300
-              text-white text-sm font-bold tracking-widest uppercase
-              transition-all active:scale-95 group"
+              text-white text-[11px] font-bold tracking-[0.14em] uppercase
+              transition-all active:scale-95 group
+              sm:static sm:z-auto sm:gap-2.5 sm:px-5 sm:py-3 sm:text-sm sm:tracking-widest"
           >
             {/* Pulsing live beacon */}
             <span

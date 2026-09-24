@@ -455,9 +455,11 @@ export class GameEngine {
 
     // Mouse / Touch orbit view (allows user to look around character smoothly)
     const dom = this.renderer.domElement;
+    dom.style.touchAction = 'none';
     dom.addEventListener('pointerdown', this.onPointerDown);
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
+    window.addEventListener('pointercancel', this.onPointerUp);
     dom.addEventListener('wheel', this.onWheel, { passive: true });
   }
 
@@ -473,6 +475,7 @@ export class GameEngine {
     }
     window.removeEventListener('pointermove', this.onPointerMove);
     window.removeEventListener('pointerup', this.onPointerUp);
+    window.removeEventListener('pointercancel', this.onPointerUp);
   }
 
   private detectMobileView(): boolean {
@@ -642,11 +645,9 @@ export class GameEngine {
       return;
     }
 
-    if (this.isMobileView && e.pointerType === 'touch') {
-      return;
-    }
-
-    // Single finger or mouse drag to orbit yaw and pitch
+    // Single-finger or mouse drag to orbit yaw and pitch. The joystick remains
+    // responsible for movement, while a drag anywhere else on the canvas
+    // controls the mobile camera view.
     if (this.isPointerDown && this.activePointers.size === 1) {
       const deltaX = e.clientX - this.lastPointerX;
       const deltaY = e.clientY - this.lastPointerY;
@@ -726,7 +727,8 @@ export class GameEngine {
 
     // 2. Movement controls
     if (this.isMobileView) {
-      // Phone mode: joystick left/right steers the samurai, while the camera stays locked behind him.
+      // Phone mode: the joystick moves and steers the samurai. Camera orbit is
+      // independent and is controlled by dragging the canvas.
       const turnInput = inputX;
       const forwardAmount = THREE.MathUtils.clamp(-inputZ, -1, 1);
       const isTurning = Math.abs(turnInput) > 0.05;
