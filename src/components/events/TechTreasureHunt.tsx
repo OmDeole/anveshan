@@ -68,7 +68,7 @@ export const TechTreasureHunt: React.FC<TechTreasureHuntProps> = ({
           <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
               <div className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Official Registration Open</div>
-              <div className="text-[11px] text-stone-300">Squad: 2–4 Detectives • Oct 9, 2026</div>
+              <div className="text-[11px] text-stone-300">Squad: 3–4 Detectives • Oct 9-10, 2026</div>
             </div>
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSddvOgfgO6StxlWagowgGFFZEZB2Gd-QpWSAg3WNch0jOuomw/viewform?pli=1"
