@@ -59,7 +59,7 @@ export const LogicLamps: React.FC<LogicLampsProps> = ({ onClose, onGoToTrainStat
           <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
               <div className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Official Registration Open</div>
-              <div className="text-[11px] text-stone-300">Squad: 2 Scholars • Oct 9, 2026</div>
+              <div className="text-[11px] text-stone-300">Squad: 2 Scholars • Non-PCCOE: ₹100 / Team • Oct 9-10, 2026</div>
             </div>
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform"

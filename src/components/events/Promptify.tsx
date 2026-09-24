@@ -59,7 +59,7 @@ export const Promptify: React.FC<PromptifyProps> = ({ onClose, onGoToTrainStatio
           <div className="p-4 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
               <div className="text-xs font-semibold text-purple-300 uppercase tracking-wider">Official Registration Open</div>
-              <div className="text-[11px] text-stone-300">Squad: 1–3 Artisans • Oct 10, 2026</div>
+              <div className="text-[11px] text-stone-300">Squad: 2–3 Artisans • Non-PCCOE: ₹100 / Team • Oct 9-10, 2026</div>
             </div>
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSfsNwliV1DRE4bFFaH95I_2Yz9NINxNOG9ojTssRwyVAbPiJg/viewform"
