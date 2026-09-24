@@ -177,6 +177,11 @@ export class GameEngine {
     // 4b. Direction guidance ring around character
     this.setupDirectionGuidance();
     if (initialEnv === 'mountain-station') {
+      // The train station sits along +Z from the ridge spawn. Keep the
+      // opening view and character facing toward it.
+      this.cameraAngleY = Math.PI;
+      this.lastFacingAngle = Math.PI;
+      this.samurai.setFacingAngle(Math.PI);
       this.directionRingGroup.visible = false;
     } else if (initialEnv === 'promptify' || initialEnv === 'logic-lamps') {
       // The two alternate environments start at the south entrance and lead
@@ -261,10 +266,13 @@ export class GameEngine {
 
     this.verticalVelocity = 0;
     this.samurai.isGrounded = true;
-    this.samurai.setFacingAngle(0);
-    this.lastFacingAngle = 0;
+    const mountainStationFacing = envType === 'mountain-station' ? Math.PI : 0;
+    this.samurai.setFacingAngle(mountainStationFacing);
+    this.lastFacingAngle = mountainStationFacing;
     this.samurai.group.position.copy(this.characterPos);
-    this.cameraAngleY = envType === 'promptify' || envType === 'logic-lamps' ? Math.PI : 0;
+    this.cameraAngleY = envType === 'promptify' || envType === 'logic-lamps' || envType === 'mountain-station'
+      ? Math.PI
+      : 0;
     this.cameraPitch = this.getDefaultCameraPitch();
     this.cameraDistance = this.getDefaultCameraDistance();
     this.currentCameraPos.copy(this.characterPos).add(this.calculateCameraOffset());
