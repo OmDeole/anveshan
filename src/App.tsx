@@ -306,11 +306,11 @@ export default function App() {
 
           {/* Mountain Station: Train Proximity Prompt */}
           {currentPhase === 'mountain-station' && nearbyTrain && !activeEvent && (
-            <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 animate-bounce pointer-events-auto">
+            <div className="absolute inset-0 flex items-center justify-center p-4 z-40 pointer-events-none">
               <button
                 type="button"
                 onClick={() => handleBoardTrain(nearbyTrain.id)}
-                className="px-5 py-2.5 rounded-full bg-stone-900/95 border border-rose-500/60 text-white shadow-2xl shadow-rose-950/70 backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-medium tracking-wide hover:bg-stone-800 transition-all active:scale-95"
+                className="pointer-events-auto max-w-[calc(100vw-2rem)] px-5 py-2.5 rounded-full bg-stone-900/95 border border-rose-500/60 text-white shadow-2xl shadow-rose-950/70 backdrop-blur-md flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-center text-xs sm:text-sm font-medium tracking-wide hover:bg-stone-800 transition-all active:scale-95 animate-bounce"
               >
                 <span
                   className="w-2.5 h-2.5 rounded-full animate-pulse"
