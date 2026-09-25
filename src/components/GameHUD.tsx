@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RotateCcw, Volume2, VolumeX, Maximize2, TrainTrack } from 'lucide-react';
+import { RotateCcw, Volume2, VolumeX, Maximize2, TrainTrack, Users } from 'lucide-react';
 import { soundController } from '../game/SoundController';
 
 interface GameHUDProps {
@@ -61,8 +61,18 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           )}
         </div>
 
-        {/* Right: Action buttons (Recenter Camera, Mute, Fullscreen) */}
+        {/* Right: Action buttons (Recenter Camera, Mute, Fullscreen, Team) */}
         <div className="pointer-events-auto flex items-center gap-2">
+          <a
+            id="team-coordinators-button"
+            href="/team"
+            title="View Team Coordinators"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md bg-stone-900/70 hover:bg-stone-800/90 border border-pink-500/40 hover:border-pink-400 text-pink-200 hover:text-white text-xs font-medium transition-all shadow-lg active:scale-95 group cursor-pointer"
+          >
+            <Users className="w-3.5 h-3.5 text-pink-400 group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">Team</span>
+          </a>
+
           <button
             id="recenter-camera-button"
             type="button"

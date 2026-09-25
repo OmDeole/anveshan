@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Volume2, VolumeX, FastForward, Play, ChevronDown } from 'lucide-react';
+import { Volume2, VolumeX, FastForward, Play, ChevronDown, Users } from 'lucide-react';
 import { soundController } from '../game/SoundController';
 
 interface IntroScrollCinematicProps {
@@ -456,16 +456,28 @@ export const IntroScrollCinematic: React.FC<IntroScrollCinematicProps> = ({ onCo
             )}
           </button>
 
-          {/* Skip to Sanctuary Button */}
-          <button
-            type="button"
-            onClick={handleSkip}
-            title="Skip Directly to Game"
-            className="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-2xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/15 text-white/90 text-xs font-medium tracking-wider transition-all active:scale-95 shadow-lg"
-          >
-            <span>Skip to Game</span>
-            <FastForward className="w-3.5 h-3.5 text-amber-400" />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Team Coordinators Button */}
+            <a
+              href="/team"
+              title="View Event Team Coordinators"
+              className="pointer-events-auto flex items-center gap-2 px-3.5 py-2 rounded-2xl backdrop-blur-md bg-stone-900/70 hover:bg-stone-800/90 border border-pink-500/40 hover:border-pink-400 text-pink-200 hover:text-white text-xs font-medium tracking-wider transition-all active:scale-95 shadow-lg group cursor-pointer"
+            >
+              <Users className="w-3.5 h-3.5 text-pink-400 group-hover:scale-110 transition-transform" />
+              <span>Team Coordinators</span>
+            </a>
+
+            {/* Skip to Sanctuary Button */}
+            <button
+              type="button"
+              onClick={handleSkip}
+              title="Skip Directly to Game"
+              className="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-2xl backdrop-blur-md bg-stone-900/60 hover:bg-stone-800/80 border border-white/15 text-white/90 text-xs font-medium tracking-wider transition-all active:scale-95 shadow-lg"
+            >
+              <span>Skip to Game</span>
+              <FastForward className="w-3.5 h-3.5 text-amber-400" />
+            </button>
+          </div>
         </div>
 
         {/* Non-intrusive Start Overlay (Only shown if browser requires initial gesture for sound) */}

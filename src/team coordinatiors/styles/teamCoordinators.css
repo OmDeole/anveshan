@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* Scoped styles for Team Coordinators experience */
+.team-page-container {
+  font-family: 'Outfit', sans-serif;
+  color-scheme: dark;
+}
+
+.team-display-font {
+  font-family: 'Cinzel', serif;
+}
+
+/* Sakura Pink ring glow matching Image 2 */
+.sakura-ring-glow {
+  box-shadow: 0 0 16px rgba(244, 114, 182, 0.55), 0 0 32px rgba(225, 29, 72, 0.3);
+}
+
+.sakura-ring-glow:hover {
+  box-shadow: 0 0 26px rgba(251, 113, 133, 0.75), 0 0 45px rgba(244, 114, 182, 0.5);
+}
+
+/* Smooth reveal animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
