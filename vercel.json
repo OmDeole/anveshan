@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/team",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/team/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
