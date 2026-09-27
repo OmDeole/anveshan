@@ -1075,7 +1075,8 @@
       color: #ffffff;
     }
 
-    .btn-view-details {
+    .btn-view-details,
+    .btn-download-rulebook {
       width: 100%;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--glass-border);
@@ -1088,9 +1089,16 @@
       border-radius: 8px;
       cursor: pointer;
       transition: var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-sizing: border-box;
     }
 
-    .btn-view-details:hover {
+    .btn-view-details:hover,
+    .btn-download-rulebook:hover {
       background: rgba(248, 165, 194, 0.12);
       border-color: var(--sakura-rose);
       color: #ffffff;
@@ -2063,6 +2071,14 @@
               <button class="btn-view-details" onclick="openFeaturedEventModal('killers-trail')">
                 View Arena Details
               </button>
+              <a href="./Killers%20Trail%20Rulebook.pdf" download="Killers Trail Rulebook.pdf" target="_blank" rel="noopener noreferrer" class="btn-download-rulebook">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download Rulebook</span>
+              </a>
             </div>
           </div>
 
@@ -2133,6 +2149,14 @@
               <button class="btn-view-details" onclick="openFeaturedEventModal('logic-lamp')">
                 View Arena Details
               </button>
+              <a href="./Logic%20Lamp%20Rulebook_20260927_202920_0000.pdf" download="Logic Lamp Rulebook.pdf" target="_blank" rel="noopener noreferrer" class="btn-download-rulebook">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download Rulebook</span>
+              </a>
             </div>
           </div>
 
@@ -2208,6 +2232,14 @@
               <button class="btn-view-details" onclick="openFeaturedEventModal('promptify')">
                 View Arena Details
               </button>
+              <a href="./Promptify%20Rulebook.pdf" download="Promptify Rulebook.pdf" target="_blank" rel="noopener noreferrer" class="btn-download-rulebook">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download Rulebook</span>
+              </a>
             </div>
           </div>
         </div>
@@ -2637,6 +2669,8 @@
         date: "October 9-10, 2026",
         time: "10:30 AM – 02:30 PM IST",
         formUrl: GOOGLE_FORMS.killersTrail,
+        rulebookUrl: "./Killers%20Trail%20Rulebook.pdf",
+        rulebookName: "Killers Trail Rulebook.pdf",
         fullDesc: "Step into a shadow-shrouded crime dojo in Neo-Kyoto. When the grand master archivist of the digital scrolls is found silenced, a trail of cryptographic evidence, corrupted memory logs, and cryptic cipher scrolls is left behind. Your detective clan must analyze forensic crime scene clues, cross-examine suspects, and unravel intricate deductive puzzles to identify the culprit before dawn.",
         rules: [
           "Clans must consist of 3 to 4 registered participants.",
@@ -2658,6 +2692,8 @@
         date: "October 9-10, 2026",
         time: "02:00 PM – 05:00 PM IST",
         formUrl: GOOGLE_FORMS.logicLamp,
+        rulebookUrl: "./Logic%20Lamp%20Rulebook_20260927_202920_0000.pdf",
+        rulebookName: "Logic Lamp Rulebook.pdf",
         fullDesc: "Inspired by the classical Japanese paper lantern guiding scholars through the mist, Logic Lamp tests the purest heights of your algorithmic intuition. Scholars will face three grueling tiers: Tier 1 (Shoshin) focuses on rapid lateral thinking and discrete logic teasers; Tier 2 (Chuden) presents complex algorithmic mazes and state-machine riddles; Tier 3 (Okuden) demands live proofs for graph and dynamic programming conundrums.",
         rules: [
           "Open to duos scholars (2 members).",
@@ -2679,6 +2715,8 @@
         date: "October 9-10, 2026",
         time: "10:00 AM – 04:00 PM IST",
         formUrl: GOOGLE_FORMS.promptify,
+        rulebookUrl: "./Promptify%20Rulebook.pdf",
+        rulebookName: "Promptify Rulebook.pdf",
         fullDesc: "Harness the power of Kotodama (言霊) — the spiritual energy of words — in the ultimate generative AI battleground. Prompt engineers and creative technologists compete in rapid-fire sprints: System Prompt Jailbreaking, Zero-Shot Multimodal Visual Synthesis, Complex Context Reasoning under token constraints, and Autonomous Agent Workflow Orchestration using frontier LLMs.",
         rules: [
           "Teams can have 2 to 3 participants.",
@@ -2863,10 +2901,22 @@
           <div style="background: rgba(18,24,45,0.85); border: 1px solid rgba(248,165,194,0.3); border-radius: 12px; padding: 24px; text-align: center;">
             <h5 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 8px;">OFFICIAL REGISTRATION</h5>
             <p style="color: var(--text-soft); font-size: 0.9rem; margin-bottom: 18px;">Click below to open and submit the official Google Registration Form for this event.</p>
-            <a href="${ev.formUrl}" target="_blank" rel="noopener noreferrer" class="btn-pagoda" style="width: 100%; justify-content: center; font-size: 0.95rem; text-decoration: none;">
-              <span>Fill Official Google Form</span>
-              <span>➔</span>
-            </a>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <a href="${ev.formUrl}" target="_blank" rel="noopener noreferrer" class="btn-pagoda" style="width: 100%; justify-content: center; font-size: 0.95rem; text-decoration: none;">
+                <span>Fill Official Google Form</span>
+                <span>➔</span>
+              </a>
+              ${ev.rulebookUrl ? `
+                <a href="${ev.rulebookUrl}" download="${ev.rulebookName || 'Rulebook.pdf'}" target="_blank" rel="noopener noreferrer" class="btn-download-rulebook" style="padding: 12px 20px; font-size: 0.85rem;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Download Official Rulebook (PDF)</span>
+                </a>
+              ` : ''}
+            </div>
           </div>
         `;
       }
