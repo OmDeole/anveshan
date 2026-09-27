@@ -159,11 +159,9 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPhase, nearbyTrain, nearbyEvent, activeEvent, isNearStationPortal]);
 
-  // Initialize 3D game engine ONCE and keep it alive.
-  // Only destroy when leaving to 'cinematic' (unmount scenario).
-  // 'boarding' phase keeps the engine running behind the cutscene.
+  // Initialize the 3D game engine once and keep it alive through boarding.
   useEffect(() => {
-    // Skip during cinematic, boarding, and if container isn't ready
+    // Skip during cinematic, boarding, and if container isn't ready.
     if (currentPhase === 'cinematic' || currentPhase === 'boarding' || !containerRef.current) return;
     if (engineRef.current) return; // already initialized — engine stays alive across boarding
 
@@ -211,11 +209,14 @@ export default function App() {
 
     setIsLoading(false);
 
+  }, [currentPhase]);
+
+  useEffect(() => {
     return () => {
-      engine.destroy();
+      engineRef.current?.destroy();
       engineRef.current = null;
     };
-  }, [currentPhase]);
+  }, []);
 
 
   // Joystick move handler
@@ -426,7 +427,11 @@ export default function App() {
             />
           )}
           {activeEvent === 'logic-lamps' && (
-            <LogicLamps onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
+            <LogicLamps
+              onClose={handleCloseEvent}
+              onGoToTrainStation={handleGoToTrainStation}
+              onRegister={handleRegisterKillersTrail}
+            />
           )}
         </div>
       )}

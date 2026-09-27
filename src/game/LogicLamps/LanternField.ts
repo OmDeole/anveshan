@@ -180,6 +180,10 @@ export class LanternField {
   /** Trigger the continuous 100+ lantern release upon successful registration */
   public activate() {
     this.isActivated = true;
+    // Release the complete lantern field in a short wave sequence.
+    this.lanterns.forEach((lantern, index) => {
+      lantern.delay = (index % 12) * 0.15;
+    });
     this.group.visible = true;
   }
 

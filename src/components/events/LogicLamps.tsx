@@ -4,9 +4,10 @@ import { X, Sparkles, LampFloor, TrainTrack } from 'lucide-react';
 interface LogicLampsProps {
   onClose: () => void;
   onGoToTrainStation?: () => void;
+  onRegister?: () => void;
 }
 
-export const LogicLamps: React.FC<LogicLampsProps> = ({ onClose, onGoToTrainStation }) => {
+export const LogicLamps: React.FC<LogicLampsProps> = ({ onClose, onGoToTrainStation, onRegister }) => {
   // Allow closing with Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,6 +66,7 @@ export const LogicLamps: React.FC<LogicLampsProps> = ({ onClose, onGoToTrainStat
               href="https://docs.google.com/forms/d/e/1FAIpQLSeCN64GEVrk_d34N0PEKvlO6zRV9kdN1zuwpCVXX_HOoT2J1A/viewform"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => onRegister?.()}
               className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs tracking-wider uppercase shadow-lg transition-all active:scale-95 shrink-0 flex items-center gap-2"
             >
               <span>Fill Google Form</span>

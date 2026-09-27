@@ -379,6 +379,8 @@ export class GameEngine {
   public ringTempleBells() {
     if (this.templeEnvironment) {
       this.templeEnvironment.ringBells();
+    } else if (this.logicLampsEnvironment) {
+      this.logicLampsEnvironment.triggerLanternRelease();
     }
   }
 
