@@ -11,12 +11,14 @@ import { GameHUD } from './components/GameHUD';
 import { IntroScrollCinematic } from './components/IntroScrollCinematic';
 import { SanctuaryEventId, WaypointIndicatorData, TrainData, TrainId } from './types';
 import { SANCTUARY_EVENTS } from './game/Environment';
+import { PROMPTIFY_EVENT_DATA } from './game/promptify/PromptifyConfig';
 import { STATION_TRAINS } from './game/MountainStationEnvironment';
 import { TechTreasureHunt } from './components/events/TechTreasureHunt';
 import { Promptify } from './components/events/Promptify';
 import { LogicLamps } from './components/events/LogicLamps';
 import { EventCompass } from './components/EventCompass';
 import { TrainBoardingCinematic } from './components/TrainBoardingCinematic';
+import { FireworksShow } from './fireworks/FireworksShow';
 
 type AppPhase = 'cinematic' | 'mountain-station' | 'boarding' | 'temple' | 'promptify' | 'logic-lamps';
 
@@ -25,7 +27,14 @@ export default function App() {
   const engineRef = useRef<GameEngine | null>(null);
 
   // Initial phase: living cinematic intro & scroll scrubbing
-  const [currentPhase, setCurrentPhase] = useState<AppPhase>('cinematic');
+  const [currentPhase, setCurrentPhase] = useState<AppPhase>(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      if (search.includes('promptify') || path.includes('promptify')) return 'promptify';
+    }
+    return 'cinematic';
+  });
   const [isSprinting, setIsSprinting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [gameError, setGameError] = useState<string | null>(null);
@@ -37,12 +46,25 @@ export default function App() {
   const [waypoints, setWaypoints] = useState<WaypointIndicatorData[]>([]);
   const [isNearStationPortal, setIsNearStationPortal] = useState<boolean>(false);
   const [boardingTrain, setBoardingTrain] = useState<TrainData | null>(null);
+  const [showPromptifyCelebration, setShowPromptifyCelebration] = useState<boolean>(false);
+  const hasPromptifyFireworksStarted = useRef<boolean>(false);
 
   // Transition from cinematic scroll to 3D mountain station game
   const handleCinematicComplete = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setCurrentPhase('mountain-station');
   };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__openPromptifyModal = () => {
+        setActiveEvent('promptify');
+        engineRef.current?.setEventModalOpen(true);
+      };
+      const search = window.location.search.toLowerCase();
+      if (search.includes('promptify') && search.includes('modal')) setActiveEvent('promptify');
+    }
+  }, []);
 
   const handleCloseEvent = () => {
     setActiveEvent(null);
@@ -63,6 +85,8 @@ export default function App() {
   // Option to return to Train Station to board other trains
   const handleGoToTrainStation = () => {
     setActiveEvent(null);
+    setShowPromptifyCelebration(false);
+    hasPromptifyFireworksStarted.current = false;
     setIsNearStationPortal(false);
     setCurrentPhase('mountain-station');
     if (engineRef.current) {
@@ -87,14 +111,32 @@ export default function App() {
     }
   };
 
+  const handleRegisterPromptify = () => {
+    if (hasPromptifyFireworksStarted.current) return;
+    hasPromptifyFireworksStarted.current = true;
+    window.setTimeout(() => {
+      setActiveEvent(null);
+      engineRef.current?.setEventModalOpen(false);
+      engineRef.current?.triggerPromptifyRegistration();
+      setShowPromptifyCelebration(true);
+    }, 400);
+  };
+
   const handleBoardingComplete = () => {
     setNearbyTrain(null);
-    setCurrentPhase(
-      boardingTrain?.id === 'arya'
-        ? 'promptify'
-        : boardingTrain?.id === 'sandip'
-        ? 'logic-lamps'
-        : 'temple'
+    if (boardingTrain?.id === 'arya') {
+      setCurrentPhase('promptify');
+      engineRef.current?.setEventModalOpen(false);
+      engineRef.current?.switchEnvironment('promptify', false, ['promptify']);
+      return;
+    }
+
+    setCurrentPhase(boardingTrain?.id === 'sandip' ? 'logic-lamps' : 'temple');
+    engineRef.current?.setEventModalOpen(false);
+    engineRef.current?.switchEnvironment(
+      boardingTrain?.id === 'sandip' ? 'logic-lamps' : 'temple',
+      false,
+      boardingTrain?.id === 'sandip' ? ['logic-lamps'] : ['tech-treasure-hunt']
     );
   };
 
@@ -357,7 +399,9 @@ export default function App() {
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
                 <span>
-                  {SANCTUARY_EVENTS.find((e) => e.id === nearbyEvent)?.name || 'Event'}
+                  {nearbyEvent === 'promptify'
+                    ? PROMPTIFY_EVENT_DATA.name
+                    : SANCTUARY_EVENTS.find((e) => e.id === nearbyEvent)?.name || 'Event'}
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-stone-300 font-mono">
                   [E]
@@ -375,12 +419,25 @@ export default function App() {
             />
           )}
           {activeEvent === 'promptify' && (
-            <Promptify onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
+            <Promptify
+              onClose={handleCloseEvent}
+              onGoToTrainStation={handleGoToTrainStation}
+              onRegister={handleRegisterPromptify}
+            />
           )}
           {activeEvent === 'logic-lamps' && (
             <LogicLamps onClose={handleCloseEvent} onGoToTrainStation={handleGoToTrainStation} />
           )}
         </div>
+      )}
+
+      {showPromptifyCelebration && (
+        <FireworksShow
+          title="PROMPTIFY CELEBRATION"
+          closeButtonText="Explore Night Market"
+          autoGrandSalvo
+          onClose={() => setShowPromptifyCelebration(false)}
+        />
       )}
 
     </div>

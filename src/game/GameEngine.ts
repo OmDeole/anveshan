@@ -85,9 +85,15 @@ export class GameEngine {
   private targetCameraPos: THREE.Vector3 = new THREE.Vector3();
   private targetLookAt: THREE.Vector3 = new THREE.Vector3();
   private cameraAngleY: number = 0; // Orbit yaw offset
+  private celebrationLookOffset = 0;
+  private fireworksStarted = false;
+  public isPromptifyRegistered = false;
   private isPointerDown: boolean = false;
   private lastPointerX: number = 0;
   private lastPointerY: number = 0;
+  private pointerDownX: number = 0;
+  private pointerDownY: number = 0;
+  private pointerDownTime: number = 0;
   private activePointers: Map<number, { x: number; y: number }> = new Map();
   private initialPinchDist: number | null = null;
   private animFrameId: number | null = null;
@@ -158,6 +164,7 @@ export class GameEngine {
         PROMPTIFY_CONFIG.spawnPosition.z
       );
       this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+      this.promptifyEnvironment.onCelebrationFinished = () => this.easeCameraBackDown();
     } else if (initialEnv === 'logic-lamps') {
       this.characterPos.set(
         LOGIC_LAMPS_CONFIG.spawnPosition.x,
@@ -218,6 +225,8 @@ export class GameEngine {
     if (this.promptifyEnvironment && envType !== 'promptify') {
       this.promptifyEnvironment.destroy();
       this.promptifyEnvironment = null;
+      this.fireworksStarted = false;
+      this.isPromptifyRegistered = false;
     }
 
     if (envType === 'promptify') {
@@ -225,6 +234,9 @@ export class GameEngine {
       this.templeEnvironment = null;
       this.logicLampsEnvironment = null;
       this.promptifyEnvironment = new PromptifyEnvironment(this.scene);
+      this.promptifyEnvironment.onCelebrationFinished = () => this.easeCameraBackDown();
+      this.fireworksStarted = false;
+      this.isPromptifyRegistered = false;
       this.characterPos.set(
         PROMPTIFY_CONFIG.spawnPosition.x,
         PROMPTIFY_CONFIG.spawnPosition.y,
@@ -368,6 +380,15 @@ export class GameEngine {
     if (this.templeEnvironment) {
       this.templeEnvironment.ringBells();
     }
+  }
+
+  /** Start the in-world Promptify celebration after registration succeeds. */
+  public triggerPromptifyRegistration() {
+    if (this.fireworksStarted || this.currentEnvType !== 'promptify') return;
+    this.fireworksStarted = true;
+    this.isPromptifyRegistered = true;
+    this.promptifyEnvironment?.triggerCelebration();
+    this.easeCameraPitchUp();
   }
 
   /**
@@ -627,6 +648,9 @@ export class GameEngine {
       this.isPointerDown = true;
       this.lastPointerX = e.clientX;
       this.lastPointerY = e.clientY;
+      this.pointerDownX = e.clientX;
+      this.pointerDownY = e.clientY;
+      this.pointerDownTime = performance.now();
     } else if (this.activePointers.size === 2) {
       // Begin pinch zoom tracking
       const pts = Array.from(this.activePointers.values());
@@ -674,6 +698,26 @@ export class GameEngine {
   };
 
   private onPointerUp = (e: PointerEvent) => {
+    if (
+      this.currentEnvType === 'promptify' &&
+      this.isPromptifyRegistered &&
+      this.promptifyEnvironment &&
+      !this.isEventModalOpen
+    ) {
+      const moveDistance = Math.hypot(e.clientX - this.pointerDownX, e.clientY - this.pointerDownY);
+      const pressDuration = performance.now() - this.pointerDownTime;
+      if (moveDistance < 8 && pressDuration < 350) {
+        const rect = this.container.getBoundingClientRect();
+        this.promptifyEnvironment.fireworks.launchFromScreenClick(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+          this.camera,
+          rect.width,
+          rect.height
+        );
+      }
+    }
+
     this.activePointers.delete(e.pointerId);
     if (this.activePointers.size === 0) {
       this.isPointerDown = false;
@@ -944,7 +988,7 @@ export class GameEngine {
 
     const targetLookAt = this.targetLookAt.set(
       this.characterPos.x,
-      this.characterPos.y + 1.25,
+      this.characterPos.y + 1.25 + this.celebrationLookOffset,
       this.characterPos.z
     );
     this.cameraLookTarget.lerp(targetLookAt, Math.min(10.0 * delta, 0.95));
@@ -1250,6 +1294,44 @@ export class GameEngine {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
     }
+  }
+
+  private easeCameraPitchUp() {
+    let elapsed = 0;
+    const duration = 2;
+    const startPitch = this.cameraPitch;
+    const startOffset = this.celebrationLookOffset;
+    const startDistance = this.cameraDistance;
+    const timer = window.setInterval(() => {
+      elapsed += 0.03;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      if (!this.isPointerDown) {
+        this.cameraPitch = THREE.MathUtils.lerp(startPitch, 0.22, ease);
+        this.celebrationLookOffset = THREE.MathUtils.lerp(startOffset, 5.2, ease);
+        this.cameraDistance = THREE.MathUtils.lerp(startDistance, 9.2, ease);
+      }
+      if (progress >= 1) window.clearInterval(timer);
+    }, 30);
+  }
+
+  private easeCameraBackDown() {
+    let elapsed = 0;
+    const duration = 2.2;
+    const startPitch = this.cameraPitch;
+    const startOffset = this.celebrationLookOffset;
+    const startDistance = this.cameraDistance;
+    const timer = window.setInterval(() => {
+      elapsed += 0.03;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      if (!this.isPointerDown) {
+        this.cameraPitch = THREE.MathUtils.lerp(startPitch, this.getDefaultCameraPitch(), ease);
+        this.celebrationLookOffset = THREE.MathUtils.lerp(startOffset, 0, ease);
+        this.cameraDistance = THREE.MathUtils.lerp(startDistance, this.getDefaultCameraDistance(), ease);
+      }
+      if (progress >= 1) window.clearInterval(timer);
+    }, 30);
   }
 
   public destroy() {
