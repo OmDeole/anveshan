@@ -6,7 +6,7 @@ This isolated module powers the dedicated **Event Coordinators** showcase page f
 - `src/team coordinatiors/TeamCoordinatorsPage.tsx`: Main showcase page
 - `src/team coordinatiors/components/`: Reusable components
   - `ProfileCard.tsx`: Circular photo container with purple glowing border, yellow name, white role label
-  - `TeamCategory.tsx`: Category grouping (TY COORDINATOR, SY COORDINATOR, MEMBERS) with responsive mobile-friendly grid
+  - `TeamCategory.tsx`: Category grouping (COORDINATOR, CO-COORDINATOR, MEMBERS) with responsive mobile-friendly grid
   - `TeamSection.tsx`: Major event sections (The Killer's Trail, Logic Lamps, Promptify, Japanese Fuji Core)
   - `TeamNavbar.tsx`: Sticky navigation header with Anveshan logo and section anchor links
 - `src/team coordinatiors/data/teamData.ts`: Fully data-driven configuration for easily updating member names, roles, and profile photo paths

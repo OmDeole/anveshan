@@ -35,21 +35,21 @@ export const TEAM_SECTIONS_DATA: TeamSectionData[] = [
     backgroundType: 'gothic',
     categories: [
       {
-        id: 'kt-ty',
-        title: 'TY COORDINATOR',
+        id: 'kt-coordinator',
+        title: 'COORDINATOR',
         members: [
-          { id: 'kt-ty-1', name: 'Shagun', role: 'TY Coordinator', image: '/team-coordinators/images/shagun.jpg' },
-          { id: 'kt-ty-2', name: 'Pankaj', role: 'TY Coordinator', image: '/team-coordinators/images/pankaj.jpg' },
-          { id: 'kt-ty-3', name: 'Vinay', role: 'TY Coordinator', image: '/team-coordinators/images/vinay.jpg' },
-          { id: 'kt-ty-4', name: 'Kartik', role: 'TY Coordinator', image: '/team-coordinators/images/kartik.jpg' },
+          { id: 'kt-ty-1', name: 'Shagun', role: 'Coordinator', image: '/team-coordinators/images/shagun.jpg' },
+          { id: 'kt-ty-2', name: 'Pankaj', role: 'Coordinator', image: '/team-coordinators/images/pankaj.jpg' },
+          { id: 'kt-ty-3', name: 'Vinay', role: 'Coordinator', image: '/team-coordinators/images/vinay.jpg' },
+          { id: 'kt-ty-4', name: 'Kartik', role: 'Coordinator', image: '/team-coordinators/images/kartik.jpg' },
         ],
       },
       {
-        id: 'kt-sy',
-        title: 'SY COORDINATOR',
+        id: 'kt-co-coordinator',
+        title: 'CO-COORDINATOR',
         members: [
-          { id: 'kt-sy-1', name: 'Anand', role: 'SY Coordinator', image: '/team-coordinators/images/anand.jpg' },
-          { id: 'kt-sy-2', name: 'Rushikesh', role: 'SY Coordinator', image: '/team-coordinators/images/rushikesh.jpg' },
+          { id: 'kt-sy-1', name: 'Anand', role: 'Co-Coordinator', image: '/team-coordinators/images/anand.jpg' },
+          { id: 'kt-sy-2', name: 'Rushikesh', role: 'Co-Coordinator', image: '/team-coordinators/images/rushikesh.jpg' },
         ],
       },
       {
@@ -78,21 +78,21 @@ export const TEAM_SECTIONS_DATA: TeamSectionData[] = [
     backgroundType: 'gothic',
     categories: [
       {
-        id: 'll-ty',
-        title: 'TY COORDINATOR',
+        id: 'll-coordinator',
+        title: 'COORDINATOR',
         members: [
-          { id: 'll-ty-1', name: 'Soham', role: 'TY Coordinator', image: '/team-coordinators/images/soham.jpg' },
-          { id: 'll-ty-2', name: 'Bhumi', role: 'TY Coordinator', image: '/team-coordinators/images/bhumi.jpg' },
-          { id: 'll-ty-3', name: 'Sanskruti', role: 'TY Coordinator', image: '/team-coordinators/images/sanskruti.jpg' },
-          { id: 'll-ty-4', name: 'Arvind', role: 'TY Coordinator', image: '/team-coordinators/images/arvind.jpg' },
+          { id: 'll-ty-1', name: 'Soham', role: 'Coordinator', image: '/team-coordinators/images/soham.jpg' },
+          { id: 'll-ty-2', name: 'Bhumi', role: 'Coordinator', image: '/team-coordinators/images/bhumi.jpg' },
+          { id: 'll-ty-3', name: 'Sanskruti', role: 'Coordinator', image: '/team-coordinators/images/sanskruti.jpg' },
+          { id: 'll-ty-4', name: 'Arvind', role: 'Coordinator', image: '/team-coordinators/images/arvind.jpg' },
         ],
       },
       {
-        id: 'll-sy',
-        title: 'SY COORDINATOR',
+        id: 'll-co-coordinator',
+        title: 'CO-COORDINATOR',
         members: [
-          { id: 'll-sy-1', name: 'Sandip', role: 'SY Coordinator', image: '/team-coordinators/images/sandip.jpg' },
-          { id: 'll-sy-2', name: 'Suraj', role: 'SY Coordinator', image: '/team-coordinators/images/suraj.jpg' },
+          { id: 'll-sy-1', name: 'Sandip', role: 'Co-Coordinator', image: '/team-coordinators/images/sandip.jpg' },
+          { id: 'll-sy-2', name: 'Suraj', role: 'Co-Coordinator', image: '/team-coordinators/images/suraj.jpg' },
         ],
       },
       {
@@ -120,20 +120,20 @@ export const TEAM_SECTIONS_DATA: TeamSectionData[] = [
     backgroundType: 'gothic',
     categories: [
       {
-        id: 'pr-ty',
-        title: 'TY COORDINATOR',
+        id: 'pr-coordinator',
+        title: 'COORDINATOR',
         members: [
-          { id: 'pr-ty-1', name: 'Om Deole', role: 'TY Coordinator', image: '/team-coordinators/images/om-deole.png' },
-          { id: 'pr-ty-2', name: 'Ayush', role: 'TY Coordinator', image: '/team-coordinators/images/ayush.png' },
-          { id: 'pr-ty-3', name: 'Prajakta', role: 'TY Coordinator', image: '/team-coordinators/images/prajakta.jpg' },
+          { id: 'pr-ty-1', name: 'Om Deole', role: 'Coordinator', image: '/team-coordinators/images/om-deole.png' },
+          { id: 'pr-ty-2', name: 'Ayush', role: 'Coordinator', image: '/team-coordinators/images/ayush.png' },
+          { id: 'pr-ty-3', name: 'Prajakta', role: 'Coordinator', image: '/team-coordinators/images/prajakta.jpg' },
         ],
       },
       {
-        id: 'pr-sy',
-        title: 'SY COORDINATOR',
+        id: 'pr-co-coordinator',
+        title: 'CO-COORDINATOR',
         members: [
-          { id: 'pr-sy-1', name: 'Arya Nhavkar', role: 'SY Coordinator', image: '/team-coordinators/images/arya-nhavkar.jpeg' },
-          { id: 'pr-sy-2', name: 'Om Thakur', role: 'SY Coordinator', image: '/team-coordinators/images/om-thakur.jpg' },
+          { id: 'pr-sy-1', name: 'Arya Nhavkar', role: 'Co-Coordinator', image: '/team-coordinators/images/arya-nhavkar.jpeg' },
+          { id: 'pr-sy-2', name: 'Om Thakur', role: 'Co-Coordinator', image: '/team-coordinators/images/om-thakur.jpg' },
         ],
       },
       {

@@ -57,7 +57,7 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ section, isFirst = fal
         {/* Decorative Golden/Pink divider */}
         <div className="w-24 sm:w-36 h-[2px] mt-4 mb-8 bg-gradient-to-r from-transparent via-pink-400/80 to-transparent" />
 
-        {/* Categories Stacked Vertically (TY COORDINATOR, SY COORDINATOR, MEMBERS) */}
+        {/* Categories Stacked Vertically (COORDINATOR, CO-COORDINATOR, MEMBERS) */}
         <div className="w-full space-y-4 sm:space-y-6">
           {section.categories.map((category) => (
             <TeamCategory key={category.id} category={category} />

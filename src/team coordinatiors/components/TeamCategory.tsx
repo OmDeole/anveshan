@@ -8,7 +8,7 @@ interface TeamCategoryProps {
 
 /**
  * TeamCategory Component
- * Groups members under a role heading (TY COORDINATOR, SY COORDINATOR, MEMBERS)
+ * Groups members under a role heading (COORDINATOR, CO-COORDINATOR, MEMBERS)
  * Matches Image 1 layout:
  * - Clean bold uppercase category tag
  * - Centered vertical hierarchy
@@ -40,7 +40,7 @@ export const TeamCategory: React.FC<TeamCategoryProps> = ({ category }) => {
 
   return (
     <div className="w-full my-8 sm:my-12">
-      {/* Category Heading (TY COORDINATOR / SY COORDINATOR / MEMBERS) with increased font size and pinkish sakura styling */}
+      {/* Category Heading (COORDINATOR / CO-COORDINATOR / MEMBERS) with increased font size and pinkish sakura styling */}
       <div className="flex items-center justify-center gap-3 sm:gap-5 mb-8 sm:mb-10">
         <div className="h-[1.5px] w-12 sm:w-28 bg-gradient-to-r from-transparent via-pink-400/60 to-rose-400" />
         <h3 className="text-base sm:text-lg md:text-xl font-extrabold tracking-[0.22em] sm:tracking-[0.28em] text-white uppercase font-sans px-5 sm:px-8 py-2 sm:py-2.5 rounded-full bg-[#180514]/85 border border-pink-400/50 shadow-[0_0_25px_rgba(244,114,182,0.4)] backdrop-blur-md">
